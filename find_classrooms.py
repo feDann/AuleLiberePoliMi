@@ -14,7 +14,13 @@ def find_classrooms(location , day , month , year):
     soup = BeautifulSoup(r.text, 'html.parser')
     tableContainer = soup.find("div", {"id": "tableContainer"})
     tableRows = tableContainer.find_all('tr')[5:]
-    return tableRows[0]
+    building = ''
+    for row in tableRows:
+        tds = row.find_all('td')
+        if 'class' not in row.attrs:
+            if 'innerEdificio' in tds[0].attrs['class']:
+                building = tds[0].string
+        
 
 
 
