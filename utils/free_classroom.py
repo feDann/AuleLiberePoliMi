@@ -1,4 +1,4 @@
-from find_classrooms import find_classrooms
+from utils.find_classrooms import find_classrooms
 import datetime
 from pprint import pprint
 

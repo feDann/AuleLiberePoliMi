@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 beautifulsoup4 = "*"
 requests = "*"
+python-telegram-bot = "*"
 
 [dev-packages]
 
