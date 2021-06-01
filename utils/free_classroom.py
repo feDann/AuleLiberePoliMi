@@ -1,4 +1,4 @@
-from utils.find_classrooms import find_classrooms
+from .find_classrooms import find_classrooms
 import datetime
 from pprint import pprint
 
@@ -31,4 +31,4 @@ def find_free_room(starting_time , ending_time , location , day , month , year):
 
 if __name__ == "__main__":
     now = datetime.datetime.now()
-    find_free_room(14 , 18 , 'MIA', 31 , 5 , 2021)
+    find_free_room(9 , 13 , 'MIA', 1 , 6 , 2021)
