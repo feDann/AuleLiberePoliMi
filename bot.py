@@ -40,6 +40,9 @@ LOCATION , DAY , START_TIME , END_TIME, END = range(5)
 date_regex = '^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$'
 initial_keyboards = [["🔍Search" , "ℹinfo"]]
 
+
+# Helper functions for error messages and string builder
+
 def bonk(update):
     update.message.reply_text(texts['error']) 
     update.message.reply_photo(photo = open(join(dirname(__file__), 'photos/bonk.jpg'),'rb'))    
@@ -53,12 +56,14 @@ def room_builder_str(available_rooms):
     return available_rooms_str
 
 
+# Functions to handle all the states
+
 def start(update: Update , context: CallbackContext) ->int:
 
     user = update.message.from_user
     logger.info("%s started conversation" , user.username)
 
-    update.message.reply_text(texts['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards, one_time_keyboard=True))
+    update.message.reply_text(texts['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
 
     return LOCATION
 
@@ -153,8 +158,6 @@ def end_state(update: Update , context: CallbackContext) ->int:
     return LOCATION
 
 
-
-
 def terminate(update: Update, _: CallbackContext) -> int:
     # terminate the conversation
     user = update.message.from_user
@@ -168,6 +171,8 @@ def info(update: Update, _: CallbackContext):
     logger.info("User %s asked for more info.", user.username)
     update.message.reply_text(texts['info'],parse_mode=ParseMode.HTML)
     return 
+
+# Create the bot and all the necessary handler
 
 def main():
     updater = Updater(token=TOKEN , use_context=True)
