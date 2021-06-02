@@ -30,7 +30,10 @@ def find_classrooms(location , day , month , year):
         if 'class' not in row.attrs:
             if BUILDING in tds[0].attrs['class']:
                 buildingName = tds[0].string
-                buildingName = re.search('(Edificio.*)' , buildingName).group(1) #take only the building name
+                try:
+                    buildingName = re.search('(Edificio.*)' , buildingName).group(1) #take only the building name
+                except:
+                    pass
                 if buildingName not in info:
                     info[buildingName] = {}
         else:

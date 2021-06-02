@@ -26,7 +26,7 @@ def find_free_room(starting_time , ending_time , location , day , month , year):
                     free_rooms[building] = []
                 free_rooms[building].append(room)
     
-    pprint(free_rooms)
+    return free_rooms
 
 
 if __name__ == "__main__":
