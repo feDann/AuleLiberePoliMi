@@ -187,7 +187,7 @@ def main():
             END_TIME : [MessageHandler(Filters.text ,choose_end_time_state)],
             END : [MessageHandler(Filters.text , end_state)]
             },
-        fallbacks=[CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info)],
+        fallbacks=[CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info),CommandHandler('start',start)],
     )
 
     dispatcher.add_handler(conv_handler)
