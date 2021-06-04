@@ -1,5 +1,5 @@
 {
-    "welcome": "Hi <b>{}</b>! This is Aule Libere Polimi bot, with this bot you will be able to search free classrooms for the entire week!.\nThis bot is made by <b><a href='telegram.me/daniele_ferrazzo'>me</a></b>, for any issue, simply ask.\nIf you want more information select info!\nYou can terminate the conversation whenever you want using /terminate",
+    "welcome": "Hi <b>{}</b>! This is Aule Libere Polimi bot, with this bot you will be able to search free classrooms for the entire week!\nThis bot is made by <b><a href='telegram.me/daniele_ferrazzo'>me</a></b>, for any issue, simply ask.\nIf you want more information select info!\nYou can terminate the conversation whenever you want using /terminate",
     "location": "Choose the location",
     "day" : "Choose a day",
     "starting_time" : "Choose the starting time",
