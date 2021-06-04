@@ -7,7 +7,7 @@ URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/OccupazioniGiornoEsatt
 BUILDING = 'innerEdificio'
 ROOM = 'dove'
 LECTURE = 'slot'
-
+TIME_SHIFT = 0.25
 
 # Return a dict with all the info about the classrooms for the chosen day , 
 # the function makes a get requests to the URL and then 
@@ -57,7 +57,7 @@ def find_classrooms(location , day , month , year):
                     lesson['to'] = time
                     info[buildingName][room]['lessons'].append(lesson)
                 else:
-                    time += 0.25
+                    time += TIME_SHIFT
     return info
 
 
