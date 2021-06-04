@@ -1,3 +1,4 @@
+from logging import root
 from .find_classrooms import find_classrooms
 import datetime
 from pprint import pprint
@@ -24,11 +25,12 @@ def find_free_room(starting_time , ending_time , location , day , month , year):
             if _is_room_free(lessons , starting_time , ending_time):
                 if building not in free_rooms:
                     free_rooms[building] = []
-                free_rooms[building].append(room)
+                room_info = {'name' : room , 'link':infos[building][room]['link']}
+                free_rooms[building].append(room_info)
     
     return free_rooms
 
 
 if __name__ == "__main__":
     now = datetime.datetime.now()
-    find_free_room(9 , 13 , 'MIA', 1 , 6 , 2021)
+    pprint(find_free_room(8 , 9 , 'MIB', 6 , 6 , 2021))

@@ -1,9 +1,11 @@
+from logging import root
 import requests
 from bs4 import BeautifulSoup
 import json
 import re
 
 URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/OccupazioniGiornoEsatto.do"
+BASE_URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/"
 BUILDING = 'innerEdificio'
 ROOM = 'dove'
 LECTURE = 'slot'
@@ -42,9 +44,11 @@ def find_classrooms(location , day , month , year):
             for td in tds:
                 if ROOM in td.attrs['class']:
                     room = td.find('a').string
+                    link = td.find('a')['href']
                     
                     if room not in info[buildingName]:
                         info[buildingName][room] = {}
+                        info[buildingName][room]['link'] = BASE_URL + link
                         info[buildingName][room]['lessons'] = []
 
                 elif LECTURE in td.attrs['class'] and room != '':

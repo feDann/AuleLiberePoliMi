@@ -1,6 +1,8 @@
 import os
 from os.path import join , dirname
 from dotenv import load_dotenv
+import telegram
+from telegram.constants import MAX_MESSAGE_LENGTH
 from telegram.message import Message
 from telegram.utils.helpers import UTC
 from utils import free_classroom
@@ -16,7 +18,6 @@ from telegram import ParseMode
 
 MIN_TIME = 8
 MAX_TIME = 20
-
 
 
 # Config Stuff
@@ -59,13 +60,17 @@ def bonk(update):
     update.message.reply_photo(photo = open(join(dirname(__file__), 'photos/bonk.jpg'),'rb'))    
 
 def room_builder_str(available_rooms):
+    splitted_msg = []
     available_rooms_str = ""
     for building in available_rooms:
-        available_rooms_str += '\n<b>' + building + '</b>\n'
+        if  MAX_MESSAGE_LENGTH - len(available_rooms_str) <= 50:
+            splitted_msg.append(available_rooms_str)
+            available_rooms_str = ""
+        available_rooms_str += '\n<b>{}</b>\n'.format(building)
         for room in available_rooms[building]:
-            available_rooms_str += '\t' + room + '\n'
-    return available_rooms_str
-
+            available_rooms_str += ' <a href ="{}">{}</a>\n'.format(room['link'],room['name'])
+    splitted_msg.append(available_rooms_str)
+    return splitted_msg
 
 
 
@@ -189,9 +194,10 @@ def end_state(update: Update , context: CallbackContext) ->int:
     
     day , month , year = date.split('/')
     available_rooms = find_free_room(float(start_time + TIME_SHIFT) , float(end_time + TIME_SHIFT) , location_dict[location],int(day) , int(month) , int(year))  
-    update.message.reply_text(room_builder_str(available_rooms),parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
+    for m in room_builder_str(available_rooms):
+        update.message.reply_chat_action(telegram.ChatAction.TYPING)
+        update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
     context.user_data.clear()
-    
     return LOCATION
 
 
