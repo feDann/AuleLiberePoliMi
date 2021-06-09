@@ -151,7 +151,7 @@ def choose_end_time_state(update: Update , context: CallbackContext) ->int:
     
     try:
         start_time = int(message)
-    except:
+    except Exception:
         bonk(update)
         return END_TIME
     
@@ -181,7 +181,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
     #check if input is integer
     try:
         end_time = int(message)
-    except:
+    except Exception:
         bonk(update)
         return END
     
