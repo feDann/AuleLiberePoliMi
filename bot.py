@@ -47,7 +47,7 @@ TOKEN = os.environ.get("TOKEN")
 
 # States for conversation handler
 LOCATION , DAY , START_TIME , END_TIME, END = range(5)
-date_regex = '^(0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])[- /.](19|20)\d\d$'
+date_regex = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
 initial_keyboards = [["🔍Search" , "ℹinfo"]]
 
 
@@ -124,6 +124,7 @@ def choose_start_time_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     logger.info("%s in  choose start time state" , user.username)
+    logger.info(message)
     
     if message != 'Today' and message != 'Tomorrow':
         chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
@@ -238,8 +239,8 @@ def main():
             LOCATION : [MessageHandler(Filters.regex('^(🔍Search)$'),choose_location_state)],
             DAY : [MessageHandler(Filters.text & ~Filters.command,choose_day_state)],
             START_TIME : [MessageHandler(Filters.regex(date_regex) | Filters.regex('^(Today)$') | Filters.regex('^(Tomorrow)$'), choose_start_time_state )],
-            END_TIME : [MessageHandler(Filters.text ,choose_end_time_state)],
-            END : [MessageHandler(Filters.text , end_state)]
+            END_TIME : [MessageHandler(Filters.text & ~Filters.command,choose_end_time_state)],
+            END : [MessageHandler(Filters.text & ~Filters.command, end_state)]
             },
         fallbacks=[CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info)],
     persistent=True,name='search_room_c_handler',allow_reentry=True)
