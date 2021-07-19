@@ -14,19 +14,29 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update , ReplyK
 from telegram.ext import (PicklePersistence,Updater,CommandHandler,CallbackQueryHandler,ConversationHandler,CallbackContext,MessageHandler , Filters, messagehandler)
 from datetime import datetime ,date , timedelta
 from telegram import ParseMode
+import time
+import sys
 
 
 MIN_TIME = 8
 MAX_TIME = 20
+logPath = "log/"
 
 
 # Config Stuff
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
+if not os.path.exists(logPath):
+    os.mkdir(logPath)
 
-logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("{0}{1}.log".format(logPath, str(time.time()))),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -82,7 +92,7 @@ def start(update: Update , context: CallbackContext) ->int:
     context.user_data.clear()
 
     user = update.message.from_user
-    logger.info("%s started conversation" , user.username)
+    logging.info("%s started conversation" , user.username)
 
     update.message.reply_text(texts['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
 
@@ -94,7 +104,7 @@ def choose_location_state(update: Update , context: CallbackContext) ->int:
     reply_keyboard = [[x]for x in location_dict]
     
     user = update.message.from_user
-    logger.info("%s in  choose location state" , user.username)
+    logging.info("%s in  choose location state" , user.username)
     
     update.message.reply_text(texts['location'] , reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True))
 
@@ -105,7 +115,7 @@ def choose_location_state(update: Update , context: CallbackContext) ->int:
 def choose_day_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
-    logger.info("%s in  choose location state" , user.username)
+    logging.info("%s in  choose location state" , user.username)
 
     if message not in location_dict:
         bonk(update)
@@ -123,8 +133,8 @@ def choose_day_state(update: Update , context: CallbackContext) ->int:
 def choose_start_time_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
-    logger.info("%s in  choose start time state" , user.username)
-    logger.info(message)
+    logging.info("%s in  choose start time state" , user.username)
+    logging.info(message)
     
     if message != 'Today' and message != 'Tomorrow':
         chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
@@ -146,7 +156,7 @@ def choose_start_time_state(update: Update , context: CallbackContext) ->int:
 def choose_end_time_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
-    logger.info("%s in  choose end time state" , user.username)
+    logging.info("%s in  choose end time state" , user.username)
     start_time = 0
     #check if input is integer
     
@@ -172,7 +182,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     end_time = 0
-    logger.info("%s in the end state" , user.username)    
+    logging.info("%s in the end state" , user.username)    
 
     start_time = context.user_data['start_time']
     date = context.user_data['date']
@@ -208,7 +218,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
 def terminate(update: Update, _: CallbackContext) -> int:
     # terminate the conversation
     user = update.message.from_user
-    logger.info("%s terminated the conversation.", user.username)
+    logging.info("%s terminated the conversation.", user.username)
     update.message.reply_text(texts['cancel'], reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
@@ -217,7 +227,7 @@ def terminate(update: Update, _: CallbackContext) -> int:
 
 def info(update: Update, _: CallbackContext):
     user = update.message.from_user
-    logger.info("User %s asked for more info.", user.username)
+    logging.info("User %s asked for more info.", user.username)
     update.message.reply_text(texts['info'],parse_mode=ParseMode.HTML)
     return 
 
