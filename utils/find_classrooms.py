@@ -68,6 +68,6 @@ def find_classrooms(location , day , month , year):
 
 
 if __name__ == "__main__":
-    infos =  find_classrooms('MIA' , 1 , 6 , 2021)
+    infos =  find_classrooms('MIA' , 6 , 10 , 2021)
     with open('infos_a.json' , 'w') as outfile:
         json.dump(infos , outfile)

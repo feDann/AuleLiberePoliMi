@@ -134,7 +134,6 @@ def choose_start_time_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     logging.info("%s in  choose start time state" , user.username)
-    logging.info(message)
     
     if message != 'Today' and message != 'Tomorrow':
         chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
@@ -182,7 +181,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     end_time = 0
-    logging.info("%s in the end state" , user.username)    
+    logging.info("%s in the end state" , user.username)
 
     start_time = context.user_data['start_time']
     date = context.user_data['date']

@@ -2,6 +2,7 @@ from logging import root
 from .find_classrooms import find_classrooms
 import datetime
 from pprint import pprint
+import json 
 
 def _is_room_free(lessons , starting_time , ending_time):
     if len(lessons) == 0:
@@ -9,9 +10,9 @@ def _is_room_free(lessons , starting_time , ending_time):
     for lesson in lessons:
         start = float(lesson['from'])
         end = float(lesson['to'])
-        if starting_time < start and start < ending_time:
+        if starting_time <= start and start < ending_time:
             return False
-        if start < starting_time and end > starting_time:
+        if start <= starting_time and end > starting_time:
             return False
     return True
         
@@ -33,4 +34,6 @@ def find_free_room(starting_time , ending_time , location , day , month , year):
 
 if __name__ == "__main__":
     now = datetime.datetime.now()
-    pprint(find_free_room(8 , 9 , 'MIB', 6 , 6 , 2021))
+    info = find_free_room(14.25 , 18.25 , 'MIA', 6 , 10 , 2021)
+    with open('infos_a.json' , 'w') as outfile:
+        json.dump(info , outfile)
