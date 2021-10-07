@@ -58,7 +58,7 @@ TOKEN = os.environ.get("TOKEN")
 # States for conversation handler
 LOCATION , DAY , START_TIME , END_TIME, END , LOCPREF , SETLOCPREF, NOW = range(8)
 date_regex = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
-initial_keyboards = [["🔍Search" , "ℹinfo" , "🕒Now"]]
+initial_keyboards = [["🔍Search" , "ℹinfo" ],["🕒Now"]]
 
 
 
@@ -124,7 +124,7 @@ def set_location_preference(update: Update , context: CallbackContext) ->int:
     context.user_data["location_preference"] = message
     update.message.reply_text(texts['location_success'], reply_markup=ReplyKeyboardMarkup(initial_keyboards))
 
-    return NOW
+    return LOCATION
 
 
 
@@ -280,7 +280,6 @@ def main():
         states={
             SETLOCPREF : [MessageHandler(Filters.text & ~Filters.command, set_location_preference)],
             LOCATION : [MessageHandler(Filters.regex('^(🔍Search)$'),choose_location_state)],
-            NOW: [],
             DAY : [MessageHandler(Filters.text & ~Filters.command,choose_day_state)],
             START_TIME : [MessageHandler(Filters.regex(date_regex) | Filters.regex('^(Today)$') | Filters.regex('^(Tomorrow)$'), choose_start_time_state )],
             END_TIME : [MessageHandler(Filters.text & ~Filters.command,choose_end_time_state)],

@@ -7,5 +7,5 @@
     "ending_time" : "Choose the ending time",
     "error": "Use the buttons you fucking donkey!",
     "cancel": "Conversation terminated!\nPress /start to start again the conversation!",
-    "info" : "To start the Search process simply touch the \"🔍Search\" button and then insert using the custom keyboard the asked information\n\nIf you want to take a look at the spaghetti code you can find it on GitHub <a href='https://github.com/feDann/AuleLiberePoliMi'>here</a>"
+    "info" : "To start the Search process simply touch the \"🔍Search\" button and then insert using the custom keyboard the asked information\n\nThe \"🕒Now\" button allows you to quickly search the free classrooms for the next two hours!\n\nIf you want to take a look at the spaghetti code you can find it on GitHub <a href='https://github.com/feDann/AuleLiberePoliMi'>here</a>"
 }
