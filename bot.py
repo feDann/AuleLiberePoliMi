@@ -56,9 +56,9 @@ TOKEN = os.environ.get("TOKEN")
 
 
 # States for conversation handler
-LOCATION , DAY , START_TIME , END_TIME, END = range(5)
+LOCATION , DAY , START_TIME , END_TIME, END , LOCPREF , SETLOCPREF, NOW = range(8)
 date_regex = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
-initial_keyboards = [["🔍Search" , "ℹinfo"]]
+initial_keyboards = [["🔍Search" , "ℹinfo" , "🕒Now"]]
 
 
 
@@ -97,6 +97,34 @@ def start(update: Update , context: CallbackContext) ->int:
     update.message.reply_text(texts['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
 
     return LOCATION
+
+def find_now(update: Update , context: CallbackContext) ->int:
+    user = update.message.from_user
+
+    if "location_preference" in context.user_data:
+        context.user_data["location"] = context.user_data["location_preference"]
+        context.user_data["date"] = date.today().strftime("%d/%m/%Y")
+        context.user_data["start_time"] = int(datetime.now().strftime('%H'))
+        update.message.text = context.user_data["start_time"] + 2
+        return end_state(update, context)
+    else:
+        reply_keyboard = [[x]for x in location_dict]
+        update.message.reply_text(texts['location'] , reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True))
+        return SETLOCPREF
+
+def set_location_preference(update: Update , context: CallbackContext) ->int:
+    user = update.message.from_user
+    message = update.message.text
+    logging.info("%s in set location preference" , user.username)
+
+    if message not in location_dict:
+        bonk(update)
+        return LOCPREF
+    
+    context.user_data["location_preference"] = message
+    update.message.reply_text(texts['location_success'], reply_markup=ReplyKeyboardMarkup(initial_keyboards))
+
+    return NOW
 
 
 
@@ -207,7 +235,12 @@ def end_state(update: Update , context: CallbackContext) ->int:
     for m in room_builder_str(available_rooms):
         update.message.reply_chat_action(telegram.ChatAction.TYPING)
         update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
-    context.user_data.clear()
+    if "location_preference" in context.user_data:
+        pref = context.user_data["location_preference"]
+        context.user_data.clear()
+        context.user_data["location_preference"] = pref
+    else:
+        context.user_data.clear()
     return LOCATION
 
 
@@ -245,13 +278,15 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start',start)],
         states={
+            SETLOCPREF : [MessageHandler(Filters.text & ~Filters.command, set_location_preference)],
             LOCATION : [MessageHandler(Filters.regex('^(🔍Search)$'),choose_location_state)],
+            NOW: [],
             DAY : [MessageHandler(Filters.text & ~Filters.command,choose_day_state)],
             START_TIME : [MessageHandler(Filters.regex(date_regex) | Filters.regex('^(Today)$') | Filters.regex('^(Tomorrow)$'), choose_start_time_state )],
             END_TIME : [MessageHandler(Filters.text & ~Filters.command,choose_end_time_state)],
             END : [MessageHandler(Filters.text & ~Filters.command, end_state)]
             },
-        fallbacks=[CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info)],
+        fallbacks=[MessageHandler(Filters.regex('^(🕒Now)$'),find_now), CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info)],
     persistent=True,name='search_room_c_handler',allow_reentry=True)
 
     dispatcher.add_handler(conv_handler)
