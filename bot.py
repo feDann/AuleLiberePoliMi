@@ -260,7 +260,7 @@ def terminate(update: Update, _: CallbackContext) -> int:
 def info(update: Update, _: CallbackContext):
     user = update.message.from_user
     logging.info("User %s asked for more info.", user.username)
-    update.message.reply_text(texts['info'],parse_mode=ParseMode.HTML)
+    update.message.reply_text(texts['info'],parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
     return 
 
 
