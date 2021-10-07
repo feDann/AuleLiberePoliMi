@@ -56,7 +56,7 @@ TOKEN = os.environ.get("TOKEN")
 
 
 # States for conversation handler
-LOCATION , DAY , START_TIME , END_TIME, END , LOCPREF , SETLOCPREF, NOW = range(8)
+LOCATION , DAY , START_TIME , END_TIME, END , SETLOCPREF = range(6)
 date_regex = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
 initial_keyboards = [["🔍Search" , "ℹinfo" ],["🕒Now"]]
 
@@ -119,7 +119,7 @@ def set_location_preference(update: Update , context: CallbackContext) ->int:
 
     if message not in location_dict:
         bonk(update)
-        return LOCPREF
+        return SETLOCPREF
     
     context.user_data["location_preference"] = message
     update.message.reply_text(texts['location_success'], reply_markup=ReplyKeyboardMarkup(initial_keyboards))
