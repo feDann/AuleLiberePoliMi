@@ -102,10 +102,15 @@ def find_now(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
 
     if "location_preference" in context.user_data:
+        start_time = int(datetime.now().strftime('%H'))
+        if start_time > MAX_TIME or start_time < MIN_TIME:
+            update.message.reply_text(texts['ops'])
+            start_time = MIN_TIME
+        end_time = start_time + 2
         context.user_data["location"] = context.user_data["location_preference"]
         context.user_data["date"] = date.today().strftime("%d/%m/%Y")
-        context.user_data["start_time"] = int(datetime.now().strftime('%H'))
-        update.message.text = context.user_data["start_time"] + 2
+        context.user_data["start_time"] = start_time
+        update.message.text = end_time
         return end_state(update, context)
     else:
         reply_keyboard = [[x]for x in location_dict]
