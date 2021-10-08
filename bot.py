@@ -100,6 +100,7 @@ def start(update: Update , context: CallbackContext) ->int:
 
 def find_now(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
+    logging.info("%s in find_now state" , user.username)
 
     if "location_preference" in context.user_data:
         start_time = int(datetime.now().strftime('%H'))
