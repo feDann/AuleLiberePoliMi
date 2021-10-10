@@ -170,13 +170,15 @@ def choose_start_time_state(update: Update , context: CallbackContext) ->int:
     message = update.message.text
     logging.info("%s in  choose start time state" , user.username)
     
+    current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
     if message != 'Today' and message != 'Tomorrow':
         chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
-        if chosen_date < date.today() or chosen_date > (date.today() + timedelta(days=7)):
+        print(current_date , chosen_date)
+        if chosen_date < current_date or chosen_date > (current_date + timedelta(days=6)):
             bonk(update)
             return START_TIME
     else:
-        message = date.today().strftime("%d/%m/%Y") if message == 'Today' else (date.today() + timedelta(days=1)).strftime("%d/%m/%Y")
+        message = current_date.strftime("%d/%m/%Y") if message == 'Today' else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
     context.user_data['date'] = message
 
     reply_keyboard = [[x] for x in range(MIN_TIME,MAX_TIME)]
