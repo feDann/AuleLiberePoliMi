@@ -16,6 +16,7 @@ from datetime import datetime ,date , timedelta
 from telegram import ParseMode
 import time
 import sys
+import pytz
 
 
 MIN_TIME = 8
@@ -103,13 +104,13 @@ def find_now(update: Update , context: CallbackContext) ->int:
     logging.info("%s in find_now state" , user.username)
 
     if "location_preference" in context.user_data:
-        start_time = int(datetime.now().strftime('%H'))
+        start_time = int(datetime.now(pytz.timezone('Europe/Rome')).strftime('%H'))
         if start_time > MAX_TIME or start_time < MIN_TIME:
             update.message.reply_text(texts['ops'])
             start_time = MIN_TIME
         end_time = start_time + 2
-        context.user_data["location"] = context.user_data["location_preference"]
-        context.user_data["date"] = date.today().strftime("%d/%m/%Y")
+        context.user_data["location"] = context.user_data["location_preference"]    
+        context.user_data["date"] = datetime.now(pytz.timezone('Europe/Rome')).strftime("%d/%m/%Y")
         context.user_data["start_time"] = start_time
         update.message.text = end_time
         return end_state(update, context)
@@ -157,7 +158,7 @@ def choose_day_state(update: Update , context: CallbackContext) ->int:
     
     context.user_data["location"] = message
 
-    reply_keyboard = [[(date.today() + timedelta(days=x)).strftime("%d/%m/%Y") if x > 1 else ('Today' if x == 0 else 'Tomorrow')] for x in range(7)]
+    reply_keyboard = [[(datetime.now(pytz.timezone('Europe/Rome')) + timedelta(days=x)).strftime("%d/%m/%Y") if x > 1 else ('Today' if x == 0 else 'Tomorrow')] for x in range(7)]
     update.message.reply_text(texts['day'],reply_markup=ReplyKeyboardMarkup(reply_keyboard , one_time_keyboard=True) )
 
     return START_TIME
