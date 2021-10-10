@@ -242,6 +242,9 @@ def end_state(update: Update , context: CallbackContext) ->int:
     for m in room_builder_str(available_rooms):
         update.message.reply_chat_action(telegram.ChatAction.TYPING)
         update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
+    
+    logging.info("%s search was: %s %s %d %d" , user.username , location , date , start_time , end_time )
+    
     if "location_preference" in context.user_data:
         pref = context.user_data["location_preference"]
         context.user_data.clear()
