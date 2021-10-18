@@ -13,7 +13,7 @@ from telegram import  Update , ReplyKeyboardMarkup ,ReplyKeyboardRemove
 from telegram.ext import (PicklePersistence,Updater,CommandHandler,ConversationHandler,CallbackContext,MessageHandler , Filters)
 from datetime import datetime , timedelta
 from telegram import ParseMode
-from functions import errorhandler , string_builder , input_check
+from functions import errorhandler , string_builder , input_check , keyboard_builder
 
 
 LOGPATH = "log/"
@@ -63,10 +63,9 @@ texts = texts['en']
 
 
 # States for conversation handler
-LOCATION , DAY , START_TIME , END_TIME, END , SETLOCPREF = range(6)
+INITIAL_STATE, SET_LOCATION , SET_DAY , SET_START_TIME ,  SET_END_AND_SEND , SETPREF = range(6)
 date_regex = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
-initial_keyboards = [["🔍Search" , "ℹinfo" ],["🕒Now"]]
-
+initial_keyboard = keyboard_builder.initial_keyboard()
 
 
 
@@ -81,112 +80,79 @@ def start(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     logging.info("%s started conversation" , user.username)
 
-    update.message.reply_text(texts['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
+    update.message.reply_text(texts['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
 
-    return LOCATION
-
-def find_now(update: Update , context: CallbackContext) ->int:
-    user = update.message.from_user
-    logging.info("%s in find_now state" , user.username)
-
-    if "location_preference" in context.user_data:
-        start_time = int(datetime.now(pytz.timezone('Europe/Rome')).strftime('%H'))
-        if start_time > MAX_TIME or start_time < MIN_TIME:
-            update.message.reply_text(texts['ops'])
-            start_time = MIN_TIME
-        end_time = start_time + 2
-        context.user_data["location"] = context.user_data["location_preference"]    
-        context.user_data["date"] = datetime.now(pytz.timezone('Europe/Rome')).strftime("%d/%m/%Y")
-        context.user_data["start_time"] = start_time
-        update.message.text = end_time
-        return end_state(update, context)
-    else:
-        reply_keyboard = [[x]for x in location_dict]
-        update.message.reply_text(texts['location'] , reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True))
-        return SETLOCPREF
+    return INITIAL_STATE
 
 
-def set_location_preference(update: Update , context: CallbackContext) ->int:
+def initial_state(update:Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
-    logging.info("%s in set location preference" , user.username)
+    logging.info("%s in  choose initial state" , user.username)
+
+    
+    if message == "🔍Search":
+        update.message.reply_text(texts['location'] , reply_markup=ReplyKeyboardMarkup(keyboard_builder.search_keyboard(location_dict),one_time_keyboard=True))
+        return SET_LOCATION
+    elif message == "🕒Now":
+        pass
+    elif message == "⚙️Preferences":
+        pass
+
+
+
+
+def set_location_state(update: Update , context: CallbackContext) ->int:
+    user = update.message.from_user
+    message = update.message.text
+    logging.info("%s in  set location state" , user.username)
 
     if not input_check.location_check(message,location_dict):
         errorhandler.bonk(update , texts)
-        return SETLOCPREF
-    
-    context.user_data["location_preference"] = message
-    update.message.reply_text(texts['location_success'], reply_markup=ReplyKeyboardMarkup(initial_keyboards))
-
-    return LOCATION
-
-
-
-def choose_location_state(update: Update , context: CallbackContext) ->int:
-    reply_keyboard = [[x]for x in location_dict]
-    
-    user = update.message.from_user
-    logging.info("%s in  choose location state" , user.username)
-    
-    update.message.reply_text(texts['location'] , reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True))
-
-    return DAY
-
-
-
-def choose_day_state(update: Update , context: CallbackContext) ->int:
-    user = update.message.from_user
-    message = update.message.text
-    logging.info("%s in  choose location state" , user.username)
-
-    if not input_check.location_check(message,location_dict):
-        errorhandler.bonk(update , texts)
-        return DAY
+        return SET_LOCATION
     
     context.user_data["location"] = message
 
-    reply_keyboard = [[(datetime.now(pytz.timezone('Europe/Rome')) + timedelta(days=x)).strftime("%d/%m/%Y") if x > 1 else ('Today' if x == 0 else 'Tomorrow')] for x in range(7)]
-    update.message.reply_text(texts['day'],reply_markup=ReplyKeyboardMarkup(reply_keyboard , one_time_keyboard=True) )
+    update.message.reply_text(texts['day'],reply_markup=ReplyKeyboardMarkup(keyboard_builder.day_keyboard() , one_time_keyboard=True) )
 
-    return START_TIME
-
+    return SET_DAY
 
 
-def choose_start_time_state(update: Update , context: CallbackContext) ->int:
+
+def set_day_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
-    logging.info("%s in  choose start time state" , user.username)
+    logging.info("%s in set day state" , user.username)
     
     if input_check.day_check(message):
         current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
         message = current_date.strftime("%d/%m/%Y") if message == 'Today' else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
     else:
         errorhandler.bonk(update, texts)
-        return START_TIME
+        return SET_DAY
 
     context.user_data['date'] = message
-    reply_keyboard = [[x] for x in range(MIN_TIME,MAX_TIME)]
-    update.message.reply_text(texts['starting_time'],reply_markup=ReplyKeyboardMarkup(reply_keyboard , one_time_keyboard=True) )
+    update.message.reply_text(texts['starting_time'],reply_markup=ReplyKeyboardMarkup(keyboard_builder.start_time_keyboard() , one_time_keyboard=True) )
     
-    return END_TIME
+    return SET_START_TIME
 
 
 
-def choose_end_time_state(update: Update , context: CallbackContext) ->int:
+def set_start_time_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
-    logging.info("%s in  choose end time state" , user.username)
+    logging.info("%s in set start state" , user.username)
     ret,start_time = input_check.start_time_check(message)
     
     if not ret:
         errorhandler.bonk(update , texts)
-        return END_TIME
+        return SET_START_TIME
 
     context.user_data['start_time'] = start_time
-    reply_keyboard = [[x] for x in range(start_time + 1 , MAX_TIME + 1)]
-    update.message.reply_text(texts['ending_time'],reply_markup=ReplyKeyboardMarkup(reply_keyboard , one_time_keyboard=True) )
+    update.message.reply_text(texts['ending_time'],reply_markup=ReplyKeyboardMarkup(keyboard_builder.end_time_keyboard(start_time) , one_time_keyboard=True) )
 
-    return END
+    return SET_END_AND_SEND
+
 
 def end_state(update: Update , context: CallbackContext) ->int:
     global location
@@ -200,26 +166,21 @@ def end_state(update: Update , context: CallbackContext) ->int:
 
     if not ret:
         errorhandler.bonk(update , texts)
-        return END
+        return SET_END_AND_SEND
 
-    logging.info("%s in the end state" , user.username)
+    logging.info("%s in the set end time state and search" , user.username)
     
     day , month , year = date.split('/')
     available_rooms = find_free_room(float(start_time + TIME_SHIFT) , float(end_time + TIME_SHIFT) , location_dict[location],int(day) , int(month) , int(year))  
     for m in string_builder.room_builder_str(available_rooms):
         update.message.reply_chat_action(telegram.ChatAction.TYPING)
-        update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
+        update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
     
     logging.info("%s search was: %s %s %d %d" , user.username , location , date , start_time , end_time )
     
     
-    if "location_preference" in context.user_data:
-        pref = context.user_data["location_preference"]
-        context.user_data.clear()
-        context.user_data["location_preference"] = pref
-    else:
-        context.user_data.clear()
-    return LOCATION
+    context.user_data.clear()
+    return INITIAL_STATE
 
 
 
@@ -229,7 +190,7 @@ def terminate(update: Update, _: CallbackContext) -> int:
     # terminate the conversation
     user = update.message.from_user
     logging.info("%s terminated the conversation.", user.username)
-    update.message.reply_text(texts['cancel'], reply_markup=ReplyKeyboardRemove())
+    update.message.reply_text(texts['terminate'], reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
@@ -238,8 +199,15 @@ def terminate(update: Update, _: CallbackContext) -> int:
 def info(update: Update, _: CallbackContext):
     user = update.message.from_user
     logging.info("User %s asked for more info.", user.username)
-    update.message.reply_text(texts['info'],parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
-    return 
+    update.message.reply_text(texts['info'],parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
+    return
+
+def cancel(update: Update, _: CallbackContext):
+    user = update.message.from_user
+    logging.info("User %s canceled.", user.username)
+    update.message.reply_text(texts['cancel'],parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
+    return INITIAL_STATE
+
 
 
 # Create the bot and all the necessary handler
@@ -255,19 +223,18 @@ def main():
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start',start)],
         states={
-            SETLOCPREF : [MessageHandler(Filters.text & ~Filters.command, set_location_preference)],
-            LOCATION : [MessageHandler(Filters.regex('^(🔍Search)$'),choose_location_state)],
-            DAY : [MessageHandler(Filters.text & ~Filters.command,choose_day_state)],
-            START_TIME : [MessageHandler(Filters.regex(date_regex) | Filters.regex('^(Today)$') | Filters.regex('^(Tomorrow)$'), choose_start_time_state )],
-            END_TIME : [MessageHandler(Filters.text & ~Filters.command,choose_end_time_state)],
-            END : [MessageHandler(Filters.text & ~Filters.command, end_state)]
+            INITIAL_STATE : [MessageHandler(Filters.regex('^(🔍Search)$') | Filters.regex('^(🕒Now)$') | Filters.regex('^(⚙️Preferences)$'),initial_state)],
+            SET_LOCATION : [MessageHandler(Filters.text & ~Filters.command,set_location_state)],
+            SET_DAY : [MessageHandler(Filters.regex(date_regex) | Filters.regex('^(Today)$') | Filters.regex('^(Tomorrow)$'), set_day_state )],
+            SET_START_TIME : [MessageHandler(Filters.text & ~Filters.command,set_start_time_state)],
+            SET_END_AND_SEND : [MessageHandler(Filters.text & ~Filters.command, end_state)]
             },
-        fallbacks=[MessageHandler(Filters.regex('^(🕒Now)$'),find_now), CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info)],
+        fallbacks=[CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info) , CommandHandler('Cancel' , cancel)],
     
     persistent=True,name='search_room_c_handler',allow_reentry=True)
 
-    dispatcher.add_handler(conv_handler)
     dispatcher.add_error_handler(errorhandler.error_handler)
+    dispatcher.add_handler(conv_handler)
 
     updater.start_polling()
 
