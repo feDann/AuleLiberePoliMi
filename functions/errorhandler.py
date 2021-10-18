@@ -31,7 +31,7 @@ def error_handler(update: object, context: CallbackContext) -> None:
 
 # Helper functions for error messages and string builder
 
-def bonk(update : Update , texts):
-    update.message.reply_text(texts['error']) 
+def bonk(update : Update , texts , lang):
+    update.message.reply_text(texts[lang]['error']) 
     update.message.reply_photo(photo = open(join(dirname(__name__), 'photos/bonk.jpg'),'rb'))    
 
