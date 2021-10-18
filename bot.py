@@ -1,58 +1,64 @@
 import os
-from os.path import join , dirname
-from dotenv import load_dotenv
-import telegram
-from telegram.constants import MAX_MESSAGE_LENGTH
-from telegram.message import Message
-from telegram.utils.helpers import UTC
-from utils import free_classroom
-from utils.free_classroom import find_free_room
-from utils.find_classrooms import TIME_SHIFT
-import json
-import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update , ReplyKeyboardMarkup ,ReplyKeyboardRemove
-from telegram.ext import (PicklePersistence,Updater,CommandHandler,CallbackQueryHandler,ConversationHandler,CallbackContext,MessageHandler , Filters, messagehandler)
-from datetime import datetime ,date , timedelta
-from telegram import ParseMode
 import time
 import sys
 import pytz
+import json
+import logging
+from os.path import join , dirname
+from dotenv import load_dotenv
+import telegram
+from utils.free_classroom import find_free_room
+from utils.find_classrooms import TIME_SHIFT , MAX_TIME , MIN_TIME
+from telegram import  Update , ReplyKeyboardMarkup ,ReplyKeyboardRemove
+from telegram.ext import (PicklePersistence,Updater,CommandHandler,ConversationHandler,CallbackContext,MessageHandler , Filters)
+from datetime import datetime , timedelta
+from telegram import ParseMode
+from functions import errorhandler , string_builder , input_check
 
 
-MIN_TIME = 8
-MAX_TIME = 20
-logPath = "log/"
+LOGPATH = "log/"
+DIRPATH = dirname(__file__)
 
 
 # Config Stuff
 
-if not os.path.exists(logPath):
-    os.mkdir(logPath)
+if not os.path.exists(LOGPATH):
+    os.mkdir(LOGPATH)
 
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("{0}{1}.log".format(logPath, str(time.time()))),
+        logging.FileHandler("{0}{1}.log".format(LOGPATH, str(time.time()))),
         logging.StreamHandler(sys.stdout)
     ]
 )
 
-dotenv_path = join(dirname(__file__), '.env')
+dotenv_path = join(DIRPATH, '.env')
 load_dotenv(dotenv_path)
 
+
+
+
+
+# Load query arguments for Location as a dict
 location_dict = {}
-with open(join(dirname(__file__), 'json/location.json')) as location_json:
+with open(join(DIRPATH, 'json/location.json')) as location_json:
     location_dict = json.load(location_json)
 
+# Load the text messages for all the different languages
 texts = {}
-with open(join(dirname(__file__), 'json/lang/en.json')) as text_json:
-    texts = json.load(text_json)
-
+for lang in os.listdir(join(DIRPATH , 'json/lang')):
+    with open(join(DIRPATH,'json' , 'lang' , lang) , 'r') as f:
+        texts[lang[:2]] = json.load(f)
 
 
 TOKEN = os.environ.get("TOKEN")
+
+texts = texts['en']
+
+
 
 
 
@@ -63,30 +69,10 @@ initial_keyboards = [["🔍Search" , "ℹinfo" ],["🕒Now"]]
 
 
 
-# Helper functions for error messages and string builder
-
-
-def bonk(update):
-    update.message.reply_text(texts['error']) 
-    update.message.reply_photo(photo = open(join(dirname(__file__), 'photos/bonk.jpg'),'rb'))    
-
-def room_builder_str(available_rooms):
-    splitted_msg = []
-    available_rooms_str = ""
-    for building in available_rooms:
-        if  MAX_MESSAGE_LENGTH - len(available_rooms_str) <= 50:
-            splitted_msg.append(available_rooms_str)
-            available_rooms_str = ""
-        available_rooms_str += '\n<b>{}</b>\n'.format(building)
-        for room in available_rooms[building]:
-            available_rooms_str += ' <a href ="{}">{}</a>\n'.format(room['link'],room['name'])
-    splitted_msg.append(available_rooms_str)
-    return splitted_msg
 
 
 
 # Functions to handle all the states
-
 
 def start(update: Update , context: CallbackContext) ->int:
     
@@ -119,13 +105,14 @@ def find_now(update: Update , context: CallbackContext) ->int:
         update.message.reply_text(texts['location'] , reply_markup=ReplyKeyboardMarkup(reply_keyboard,one_time_keyboard=True))
         return SETLOCPREF
 
+
 def set_location_preference(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     logging.info("%s in set location preference" , user.username)
 
-    if message not in location_dict:
-        bonk(update)
+    if not input_check.location_check(message,location_dict):
+        errorhandler.bonk(update , texts)
         return SETLOCPREF
     
     context.user_data["location_preference"] = message
@@ -152,8 +139,8 @@ def choose_day_state(update: Update , context: CallbackContext) ->int:
     message = update.message.text
     logging.info("%s in  choose location state" , user.username)
 
-    if message not in location_dict:
-        bonk(update)
+    if not input_check.location_check(message,location_dict):
+        errorhandler.bonk(update , texts)
         return DAY
     
     context.user_data["location"] = message
@@ -170,20 +157,16 @@ def choose_start_time_state(update: Update , context: CallbackContext) ->int:
     message = update.message.text
     logging.info("%s in  choose start time state" , user.username)
     
-    current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
-    if message != 'Today' and message != 'Tomorrow':
-        chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
-        print(current_date , chosen_date)
-        if chosen_date < current_date or chosen_date > (current_date + timedelta(days=6)):
-            bonk(update)
-            return START_TIME
-    else:
+    if input_check.day_check(message):
+        current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
         message = current_date.strftime("%d/%m/%Y") if message == 'Today' else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
-    context.user_data['date'] = message
+    else:
+        errorhandler.bonk(update, texts)
+        return START_TIME
 
+    context.user_data['date'] = message
     reply_keyboard = [[x] for x in range(MIN_TIME,MAX_TIME)]
     update.message.reply_text(texts['starting_time'],reply_markup=ReplyKeyboardMarkup(reply_keyboard , one_time_keyboard=True) )
-
     
     return END_TIME
 
@@ -193,18 +176,10 @@ def choose_end_time_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     logging.info("%s in  choose end time state" , user.username)
-    start_time = 0
-    #check if input is integer
+    ret,start_time = input_check.start_time_check(message)
     
-    try:
-        start_time = int(message)
-    except Exception:
-        bonk(update)
-        return END_TIME
-    
-    #check if previous input is correct
-    if start_time > MAX_TIME or start_time < MIN_TIME:
-        bonk(update)
+    if not ret:
+        errorhandler.bonk(update , texts)
         return END_TIME
 
     context.user_data['start_time'] = start_time
@@ -217,35 +192,26 @@ def end_state(update: Update , context: CallbackContext) ->int:
     global location
     user = update.message.from_user
     message = update.message.text
-    end_time = 0
-    logging.info("%s in the end state" , user.username)
 
     start_time = context.user_data['start_time']
     date = context.user_data['date']
     location = context.user_data['location']
-    
-    
-    #check if input is integer
-    try:
-        end_time = int(message)
-    except Exception:
-        bonk(update)
-        return END
-    
-    
-    # check if previuos input is correct
-    if int(start_time) >= end_time or end_time > MAX_TIME + 1:
-        bonk(update)
+    ret ,end_time = input_check.end_time_check(message ,start_time)
+
+    if not ret:
+        errorhandler.bonk(update , texts)
         return END
 
+    logging.info("%s in the end state" , user.username)
     
     day , month , year = date.split('/')
     available_rooms = find_free_room(float(start_time + TIME_SHIFT) , float(end_time + TIME_SHIFT) , location_dict[location],int(day) , int(month) , int(year))  
-    for m in room_builder_str(available_rooms):
+    for m in string_builder.room_builder_str(available_rooms):
         update.message.reply_chat_action(telegram.ChatAction.TYPING)
         update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboards))
     
     logging.info("%s search was: %s %s %d %d" , user.username , location , date , start_time , end_time )
+    
     
     if "location_preference" in context.user_data:
         pref = context.user_data["location_preference"]
@@ -276,7 +242,6 @@ def info(update: Update, _: CallbackContext):
     return 
 
 
-
 # Create the bot and all the necessary handler
 
 
@@ -298,9 +263,11 @@ def main():
             END : [MessageHandler(Filters.text & ~Filters.command, end_state)]
             },
         fallbacks=[MessageHandler(Filters.regex('^(🕒Now)$'),find_now), CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info)],
+    
     persistent=True,name='search_room_c_handler',allow_reentry=True)
 
     dispatcher.add_handler(conv_handler)
+    dispatcher.add_error_handler(errorhandler.error_handler)
 
     updater.start_polling()
 

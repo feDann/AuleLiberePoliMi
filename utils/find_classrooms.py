@@ -10,6 +10,8 @@ BUILDING = 'innerEdificio'
 ROOM = 'dove'
 LECTURE = 'slot'
 TIME_SHIFT = 0.25
+MIN_TIME = 8
+MAX_TIME = 20
 
 # Return a dict with all the info about the classrooms for the chosen day , 
 # the function makes a get requests to the URL and then 
