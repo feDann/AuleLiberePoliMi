@@ -1,0 +1,14 @@
+{
+    "welcome": "Ciao <b>{}</b>! Questo è Aule Libere Polimi bot, con questo bot sarai in grado di cercare le aule libere per l'intera settimana!\nQuesto bot è stato sviluppato da <b><a href='telegram.me/daniele_ferrazzo'>me</a></b>, per qualsiasi problema, chiedi!.\nSe vuoi ulteriori informazioni premi info!\nPuoi terminare in qualsiasi momento la conversazione con il comando /terminate , attenzione così facendo eliminerai tutte le tue preferenze!",
+    "location": "Seleziona il campus",
+    "day" : "Seleziona il giorno",
+    "starting_time" : "Seleziona l'orario iniziale",
+    "ending_time" : "Seleziona l'orario finale",
+    "error": "Usa i bottoni!",
+    "ops" : "Il PoliMi adesso è chiuso!\nTi darò invee le informazioni sulle aule libere di domattina!",
+    "terminate": "Conversazione terminata!\nPremi /start per niiziare una nuova conversazione!",
+    "cancel" : "Operazione annullata!",
+    "info" : "Per iniziare la ricerca premi il pulsante \"🔍Cerca\" e dopo inserisci usanto gli appositi pulsanti le informazioni richieste.\n\nIl pulsante \"🕒Ora\" ti permette , dopo aver impostato le preferenze, di cercare velocemente le aule libere!\n\nIf you wish to reset your preference about the location of the quick search simply press /start\n\nIf you want to take a look at the spaghetti code you can find it on GitHub <a href='https://github.com/feDann/AuleLiberePoliMi'>here</a>",
+    "settings" : "Impostazioni",
+    "language" : "Seleziona la tua lingua preferita"
+}

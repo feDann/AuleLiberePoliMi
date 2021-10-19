@@ -45,3 +45,8 @@ def end_time_check(message:str , start_time:int) -> Tuple[bool, int]:
     if int(start_time) >= end_time or end_time > MAX_TIME + 1:
         return (False,0)
     return (True,end_time)
+
+def language_check(message ,texts):
+    if message not in texts:
+        return False
+    return True

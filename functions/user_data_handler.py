@@ -28,3 +28,7 @@ def reset_user_data(context: CallbackContext):
     else:
         context.user_data.clear()
         initialize_user_data(context)
+
+
+def update_lang(lang , context:CallbackContext):
+    context.user_data['preference']['lang'] = lang
