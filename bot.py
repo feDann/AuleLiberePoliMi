@@ -21,12 +21,16 @@ LOGPATH = "log/"
 DIRPATH = dirname(__file__)
 
 
-# Config Stuff
 
+"""
+Create a dir for the logs file
+"""
 if not os.path.exists(LOGPATH):
     os.mkdir(LOGPATH)
 
-
+"""
+Basic logger config
+"""
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -42,18 +46,25 @@ load_dotenv(dotenv_path)
 
 
 
-# Load query arguments for Location as a dict
+"""
+Code below load all the query params for the campus in a dict
+"""
 location_dict = {}
 with open(join(DIRPATH, 'json/location.json')) as location_json:
     location_dict = json.load(location_json)
 
-# Load the text messages for all the different languages
+"""
+Code below load in a dict all the text messages in all the available languages
+"""
 texts = {}
 for lang in os.listdir(join(DIRPATH , 'json/lang')):
     with open(join(DIRPATH,'json' , 'lang' , lang) , 'r') as f:
         texts[lang[:2]] = json.load(f)
 
-
+"""
+The fragment of code below load in a dict all the aliases for the various commands
+eg for search: Search, Cerca ecc
+"""
 command_keys = {}
 for lang in texts:
     for key in texts[lang]["keyboards"]:
@@ -67,7 +78,9 @@ TOKEN = os.environ.get("TOKEN")
 
 
 
-# States for conversation handler
+"""
+States for the conversation handler
+"""
 INITIAL_STATE, SET_LOCATION , SET_DAY , SET_START_TIME ,  SET_END_AND_SEND , SETTINGS , SET_LANG , SET_CAMPUS , SET_TIME , NOW= range(10)
 
 
@@ -78,15 +91,23 @@ referred to the initial state, second three are referred to the settings state
 """
 
 def search(update: Update , context : CallbackContext , lang) -> int:
+    """
+    Send the keyboard for the location and return to set_location state ,
+    this function is the initial state for the searching process
+    """
     update.message.reply_text(texts[lang]["texts"]['location'] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.location_keyboard(lang),one_time_keyboard=True))
     return SET_LOCATION
 
 
 def now(update: Update , context : CallbackContext, lang) -> int:
+    """
+    Thhis functions implements the quick search, after checking if the campus is in
+    the preferences of the user call the end_state function, otherwise return to the initial_state
+    """
     user = update.message.from_user
     logging.info("%s in now state" , user.username)
     loc, dur = user_data_handler.get_user_preferences(context)
-    
+
     if loc is None:
         update.message.reply_text(texts[lang]["texts"]["missing"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.initial_keyboard(lang)))
         return INITIAL_STATE
@@ -104,23 +125,39 @@ def now(update: Update , context : CallbackContext, lang) -> int:
 
 
 def preferences(update: Update , context : CallbackContext, lang) -> int:
+    """
+    Send the keyboard for the preferences state and return to setting state
+    """
     update.message.reply_text(texts[lang]["texts"]["settings"],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
     return SETTINGS
 
 def language(update: Update , context : CallbackContext, lang) -> int:
+    """
+    Send the keyboard for the languages and return to set_lang state
+    """
     update.message.reply_text(texts[lang]["texts"]["language"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.language_keyboard(lang)))
     return SET_LANG
 
 
 def duration(update: Update , context : CallbackContext, lang) -> int:
+    """
+    Send the keyboard for the duration and return to set_time state
+    """
     update.message.reply_text(texts[lang]["texts"]["time"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.time_keyboard()))
     return SET_TIME
 
 
 def campus(update: Update , context : CallbackContext, lang) -> int:
+    """
+    Send the keyboard for the campus and return to set_campus state
+    """
     update.message.reply_text(texts[lang]["texts"]["campus"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.location_keyboard(lang)))
     return SET_CAMPUS
 
+"""
+Code below map in a dict all the aliases for a certain function,
+e.g. map all the aliases of search (search, cerca, ecc) to the search function
+"""
 function_map = {}
 function_mapping = {"search" : search , "now" : now , "preferences" : preferences , "language" : language , "time" : duration, "campus" : campus}
 for key in command_keys:
@@ -130,10 +167,13 @@ for key in command_keys:
 
 
 
-# Functions to handle all the states
+"""STATES FUNCTIONS"""
 
 def start(update: Update , context: CallbackContext) ->int:
-    
+    """
+    Start function for the conversation handler, initialize the dict of user_data
+    in the context and return to the initial state
+    """
     lang = user_data_handler.initialize_user_data(context)     
     user = update.message.from_user
     initial_keyboard = KEYBOARDS.initial_keyboard(lang)
@@ -145,6 +185,10 @@ def start(update: Update , context: CallbackContext) ->int:
 
 
 def initial_state(update:Update , context: CallbackContext) ->int:
+    """
+    Initial State of the ConversationHandler, through the function_map return to
+    the right function based on the user input
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -155,6 +199,10 @@ def initial_state(update:Update , context: CallbackContext) ->int:
 
 
 def settings(update: Update , context : CallbackContext):
+    """
+    Settings state of the Conversation Handler, from here based on the user input
+    calls the right function using the function_map 
+    """
     user = update.message.from_user
     message = update.message.text
     logging.info("%s in  settings" , user.username)
@@ -163,6 +211,11 @@ def settings(update: Update , context : CallbackContext):
     return function_map[message](update,context,lang)
 
 def set_language(update: Update , context : CallbackContext):
+    """
+    In this state is stored in the user_data the preference for the language,
+    if the input check goes well it returns to the settings, otherwise remain 
+    in the same state
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -178,6 +231,11 @@ def set_language(update: Update , context : CallbackContext):
     return SETTINGS
     
 def set_campus(update: Update , context: CallbackContext):
+    """
+    In this state is stored in the user_data the preference for the campus,
+    if the input check goes well it returns to the settings, otherwise remain
+    in the same state  
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -192,6 +250,11 @@ def set_campus(update: Update , context: CallbackContext):
     return SETTINGS
 
 def set_time(update: Update , context: CallbackContext):
+    """
+    In this state is stored in the user_data the preference for the duration
+    in terms of hours for the quick search, if the input check goes well it 
+    returns to the settings, otherwise remain in the same state   
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -207,6 +270,10 @@ def set_time(update: Update , context: CallbackContext):
 
 
 def set_location_state(update: Update , context: CallbackContext) ->int:
+    """
+    In this state is saved in the user_data the location for the search process,
+    if the input check goes well it returns to the set_day, otherwise remain in the same state
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -225,6 +292,10 @@ def set_location_state(update: Update , context: CallbackContext) ->int:
 
 
 def set_day_state(update: Update , context: CallbackContext) ->int:
+    """
+    In this state is saved in the user_data the chosen day for the search process,
+    if the input check goes well it returns to the set_start_time, otherwise remain in the same state
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -245,6 +316,10 @@ def set_day_state(update: Update , context: CallbackContext) ->int:
 
 
 def set_start_time_state(update: Update , context: CallbackContext) ->int:
+    """
+    In this state is saved in the user_data the starting time of the search process,
+    if the input check goes well it returns to the end_state, otherwise remain in the same state
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -262,7 +337,11 @@ def set_start_time_state(update: Update , context: CallbackContext) ->int:
 
 
 def end_state(update: Update , context: CallbackContext) ->int:
-    global location
+    """
+    Final state of the search process, check if the last input is valid and 
+    proceed to return to the user all the free classrooms, otherwise remains
+    in the same state
+    """
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
@@ -294,10 +373,12 @@ def end_state(update: Update , context: CallbackContext) ->int:
 
 
 
-# fallback funtions
+"""FALLBACKS"""
 
 def terminate(update: Update, context: CallbackContext) -> int:
-    # terminate the conversation
+    """
+    This function terminate the Conversation handler
+    """
     user = update.message.from_user
     lang = user_data_handler.get_lang(context)
 
@@ -309,6 +390,9 @@ def terminate(update: Update, context: CallbackContext) -> int:
 
 
 def info(update: Update, context: CallbackContext):
+    """
+    Return some info to the user
+    """
     user = update.message.from_user
     lang = user_data_handler.get_lang(context)
     initial_keyboard = KEYBOARDS.initial_keyboard(lang)
@@ -317,6 +401,9 @@ def info(update: Update, context: CallbackContext):
     return
 
 def cancel(update: Update, context: CallbackContext):
+    """
+    Stop any process and return to the initial state
+    """
     user = update.message.from_user
     lang = user_data_handler.get_lang(context)
     initial_keyboard = KEYBOARDS.initial_keyboard(lang)
@@ -327,8 +414,7 @@ def cancel(update: Update, context: CallbackContext):
 
 
 
-# Create the bot and all the necessary handler
-
+"""BOT INITIALIZATION"""
 
 def main():
     #add persistence for states
