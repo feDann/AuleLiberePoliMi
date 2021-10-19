@@ -10,15 +10,16 @@ import telegram
 from telegram.message import Message
 from utils.free_classroom import find_free_room
 from utils.find_classrooms import TIME_SHIFT , MAX_TIME , MIN_TIME
-from telegram import  Update , ReplyKeyboardMarkup ,ReplyKeyboardRemove
-from telegram.ext import (PicklePersistence,Updater,CommandHandler,ConversationHandler,CallbackContext,MessageHandler , Filters)
+from telegram import  Update , ReplyKeyboardMarkup ,ReplyKeyboardRemove  
+from telegram.ext import (PicklePersistence,Updater,CommandHandler,ConversationHandler,CallbackContext,MessageHandler , Filters , CallbackQueryHandler)
 from datetime import datetime , timedelta
 from telegram import ParseMode
-from functions import errorhandler , string_builder , input_check , keyboard_builder , user_data_handler
+from functions import errorhandler , string_builder , input_check , keyboard_builder , user_data_handler ,regex_builder
 
 
 LOGPATH = "log/"
 DIRPATH = dirname(__file__)
+DATE_REGEX = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
 
 
 # Config Stuff
@@ -53,7 +54,7 @@ for lang in os.listdir(join(DIRPATH , 'json/lang')):
     with open(join(DIRPATH,'json' , 'lang' , lang) , 'r') as f:
         texts[lang[:2]] = json.load(f)
 
-
+KEYBOARDS = keyboard_builder.KeyboadBuilder(texts , location_dict)
 
 TOKEN = os.environ.get("TOKEN")
 
@@ -61,8 +62,6 @@ TOKEN = os.environ.get("TOKEN")
 
 # States for conversation handler
 INITIAL_STATE, SET_LOCATION , SET_DAY , SET_START_TIME ,  SET_END_AND_SEND , SETTINGS , SET_LANG = range(7)
-date_regex = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
-
 
 
 
@@ -72,10 +71,10 @@ def start(update: Update , context: CallbackContext) ->int:
     
     lang = user_data_handler.initialize_user_data(context)     
     user = update.message.from_user
-    initial_keyboard = keyboard_builder.initial_keyboard()
+    initial_keyboard = KEYBOARDS.initial_keyboard(lang)
     logging.info("%s started conversation" , user.username)
 
-    update.message.reply_text(texts[lang]['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
+    update.message.reply_text(texts[lang]["texts"]['welcome'].format(user.username),disable_web_page_preview=True , parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
 
     return INITIAL_STATE
 
@@ -86,23 +85,24 @@ def initial_state(update:Update , context: CallbackContext) ->int:
     lang = user_data_handler.get_lang(context)
     logging.info("%s in  choose initial state" , user.username)
 
-    
+    #TODO multi language support
     if message == "🔍Search":
-        update.message.reply_text(texts[lang]['location'] , reply_markup=ReplyKeyboardMarkup(keyboard_builder.search_keyboard(location_dict ),one_time_keyboard=True))
+        update.message.reply_text(texts[lang]["texts"]['location'] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.search_keyboard(lang),one_time_keyboard=True))
         return SET_LOCATION
     elif message == "🕒Now":
         pass
     elif message == "⚙️Preferences":
-        update.message.reply_text(texts[lang]["settings"],reply_markup=ReplyKeyboardMarkup(keyboard_builder.preference_keyboard()))
+        update.message.reply_text('test',reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
         return SETTINGS
 
 
 def settings(update: Update , context : CallbackContext):
     user = update.message.from_user
     message = update.message.text
-    logging.info("%s in  language settings" , user.username)
+    logging.info("%s in  settings" , user.username)
     lang = user_data_handler.get_lang(context)
-    update.message.reply_text(texts[lang]["language"] , reply_markup=ReplyKeyboardMarkup(keyboard_builder.language_keyboard(texts)))
+    
+    update.message.reply_text(texts[lang]["texts"]["language"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.language_keyboard(lang)))
     return SET_LANG
 
 def set_language(update: Update , context : CallbackContext):
@@ -117,7 +117,7 @@ def set_language(update: Update , context : CallbackContext):
     lang = message
     user_data_handler.update_lang(lang , context)
     
-    update.message.reply_text(texts[lang]["settings"],reply_markup=ReplyKeyboardMarkup(keyboard_builder.preference_keyboard()))
+    update.message.reply_text(texts[lang]["texts"]["settings"],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
     return SETTINGS
     
 
@@ -129,12 +129,12 @@ def set_location_state(update: Update , context: CallbackContext) ->int:
     logging.info("%s in  set location state" , user.username)
 
     if not input_check.location_check(message,location_dict):
-        errorhandler.bonk(update )
+        errorhandler.bonk(update ,texts , lang )
         return SET_LOCATION
     
     context.user_data["location"] = message
 
-    update.message.reply_text(texts[lang]['day'],reply_markup=ReplyKeyboardMarkup(keyboard_builder.day_keyboard() , one_time_keyboard=True) )
+    update.message.reply_text(texts[lang]["texts"]['day'],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.day_keyboard(lang) , one_time_keyboard=True) )
 
     return SET_DAY
 
@@ -150,11 +150,11 @@ def set_day_state(update: Update , context: CallbackContext) ->int:
         current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
         message = current_date.strftime("%d/%m/%Y") if message == 'Today' else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
     else:
-        errorhandler.bonk(update)
+        errorhandler.bonk(update , texts , lang)
         return SET_DAY
 
     context.user_data['date'] = message
-    update.message.reply_text(texts[lang]['starting_time'],reply_markup=ReplyKeyboardMarkup(keyboard_builder.start_time_keyboard() , one_time_keyboard=True) )
+    update.message.reply_text(texts[lang]["texts"]['starting_time'],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.start_time_keyboard(lang) , one_time_keyboard=True) )
     
     return SET_START_TIME
 
@@ -168,11 +168,11 @@ def set_start_time_state(update: Update , context: CallbackContext) ->int:
     ret,start_time = input_check.start_time_check(message)
     
     if not ret:
-        errorhandler.bonk(update )
+        errorhandler.bonk(update , texts , lang )
         return SET_START_TIME
 
     context.user_data['start_time'] = start_time
-    update.message.reply_text(texts[lang]['ending_time'],reply_markup=ReplyKeyboardMarkup(keyboard_builder.end_time_keyboard(start_time ,) , one_time_keyboard=True) )
+    update.message.reply_text(texts[lang]["texts"]['ending_time'],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.end_time_keyboard(lang ,start_time ) , one_time_keyboard=True) )
 
     return SET_END_AND_SEND
 
@@ -182,7 +182,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    initial_keyboard = keyboard_builder.initial_keyboard()
+    initial_keyboard = KEYBOARDS.initial_keyboard(lang)
 
     start_time = context.user_data['start_time']
     date = context.user_data['date']
@@ -190,7 +190,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
     ret ,end_time = input_check.end_time_check(message ,start_time)
 
     if not ret:
-        errorhandler.bonk(update )
+        errorhandler.bonk(update , texts , lang )
         return SET_END_AND_SEND
 
     logging.info("%s in the set end time state and search" , user.username)
@@ -218,7 +218,7 @@ def terminate(update: Update, context: CallbackContext) -> int:
     lang = user_data_handler.get_lang(context)
 
     logging.info("%s terminated the conversation.", user.username)
-    update.message.reply_text(texts[lang]['terminate'], reply_markup=ReplyKeyboardRemove())
+    update.message.reply_text(texts[lang]["texts"]['terminate'], reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
@@ -226,19 +226,20 @@ def terminate(update: Update, context: CallbackContext) -> int:
 
 def info(update: Update, context: CallbackContext):
     user = update.message.from_user
-    initial_keyboard = keyboard_builder.initial_keyboard()
     lang = user_data_handler.get_lang(context)
+    initial_keyboard = KEYBOARDS.initial_keyboard(lang)
     logging.info("User %s asked for more info.", user.username)
-    update.message.reply_text(texts[lang]['info'],parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
+    update.message.reply_text(texts[lang]["texts"]['info'],parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
     return
 
 def cancel(update: Update, context: CallbackContext):
     user = update.message.from_user
-    initial_keyboard = keyboard_builder.initial_keyboard()
     lang = user_data_handler.get_lang(context)
+    initial_keyboard = KEYBOARDS.initial_keyboard(lang)
     logging.info("User %s canceled.", user.username)
-    update.message.reply_text(texts[lang]['cancel'] ,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
+    update.message.reply_text(texts[lang]["texts"]['cancel'] ,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
     return INITIAL_STATE
+
 
 
 
@@ -248,23 +249,24 @@ def cancel(update: Update, context: CallbackContext):
 def main():
     #add persistence for states
     pp = PicklePersistence(filename='aulelibere_pp')
+    
+    regex = regex_builder.RegexBuilder(texts)
 
     updater = Updater(token=TOKEN , use_context=True , persistence=pp)
     dispatcher = updater.dispatcher
-    
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start',start)],
         states={
-            INITIAL_STATE : [MessageHandler(Filters.regex('^(🔍Search)$') | Filters.regex('^(🕒Now)$') | Filters.regex('^(⚙️Preferences)$'),initial_state)],
+            INITIAL_STATE : [MessageHandler(Filters.regex(regex.initial_state()),initial_state)],
             SET_LOCATION : [MessageHandler(Filters.text & ~Filters.command,set_location_state)],
-            SET_DAY : [MessageHandler(Filters.regex(date_regex) | Filters.regex('^(Today)$') | Filters.regex('^(Tomorrow)$'), set_day_state )],
+            SET_DAY : [MessageHandler(Filters.regex(regex.date_regex()) | Filters.regex(regex.date_string_regex()), set_day_state )],
             SET_START_TIME : [MessageHandler(Filters.text & ~Filters.command,set_start_time_state)],
             SET_END_AND_SEND : [MessageHandler(Filters.text & ~Filters.command, end_state)],
-            SETTINGS : [MessageHandler(Filters.regex('^(Language)$') , settings)],
+            SETTINGS : [MessageHandler(Filters.regex(regex.settings_regex()) , settings)],
             SET_LANG : [MessageHandler(Filters.text & ~Filters.command , set_language)]
             },
-        fallbacks=[CommandHandler('terminate' , terminate) , MessageHandler(Filters.regex('^(ℹinfo)$') , info), CommandHandler("Cancel" , cancel)],
+        fallbacks=[CommandHandler('terminate' , terminate)  , MessageHandler(Filters.regex(regex.info_regex()) , info), MessageHandler(Filters.regex(regex.cancel_command()), cancel)],
     
     persistent=True,name='search_room_c_handler',allow_reentry=True)
 

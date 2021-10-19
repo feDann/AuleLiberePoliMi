@@ -16,6 +16,8 @@ def initialize_user_data(context: CallbackContext):
     lang = 'en' # Default language    
     context.user_data['preference'] = {} # set the default language
     context.user_data['preference']['lang'] = lang
+    context.user_data['preference']['time'] = 2
+
     return lang
 
 

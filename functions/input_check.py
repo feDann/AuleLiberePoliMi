@@ -50,3 +50,5 @@ def language_check(message ,texts):
     if message not in texts:
         return False
     return True
+
+
