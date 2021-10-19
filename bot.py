@@ -19,7 +19,6 @@ from functions import errorhandler , string_builder , input_check , keyboard_bui
 
 LOGPATH = "log/"
 DIRPATH = dirname(__file__)
-DATE_REGEX = '^([0]?[1-9]|[1|2][0-9]|[3][0|1])[./-]([0]?[1-9]|[1][0-2])[./-]([0-9]{4}|[0-9]{2})$'
 
 
 # Config Stuff
@@ -69,7 +68,65 @@ TOKEN = os.environ.get("TOKEN")
 
 
 # States for conversation handler
-INITIAL_STATE, SET_LOCATION , SET_DAY , SET_START_TIME ,  SET_END_AND_SEND , SETTINGS , SET_LANG = range(7)
+INITIAL_STATE, SET_LOCATION , SET_DAY , SET_START_TIME ,  SET_END_AND_SEND , SETTINGS , SET_LANG , SET_CAMPUS , SET_TIME , NOW= range(10)
+
+
+
+"""
+The Functions below are used for the various commands in the states, first three functions are
+referred to the initial state, second three are referred to the settings state
+"""
+
+def search(update: Update , context : CallbackContext , lang) -> int:
+    update.message.reply_text(texts[lang]["texts"]['location'] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.location_keyboard(lang),one_time_keyboard=True))
+    return SET_LOCATION
+
+
+def now(update: Update , context : CallbackContext, lang) -> int:
+    user = update.message.from_user
+    logging.info("%s in now state" , user.username)
+    loc, dur = user_data_handler.get_user_preferences(context)
+    
+    if loc is None:
+        update.message.reply_text(texts[lang]["texts"]["missing"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.initial_keyboard(lang)))
+        return INITIAL_STATE
+    
+    start_time = int(datetime.now(pytz.timezone('Europe/Rome')).strftime('%H'))
+    if start_time > MAX_TIME or start_time < MIN_TIME:
+        update.message.reply_text(texts[lang]["texts"]['ops'])
+        start_time = MIN_TIME
+    end_time = start_time + dur
+    context.user_data["location"] = loc   
+    context.user_data["date"] = datetime.now(pytz.timezone('Europe/Rome')).strftime("%d/%m/%Y")
+    context.user_data["start_time"] = start_time
+    update.message.text = end_time
+    return end_state(update, context)
+
+
+def preferences(update: Update , context : CallbackContext, lang) -> int:
+    update.message.reply_text(texts[lang]["texts"]["settings"],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
+    return SETTINGS
+
+def language(update: Update , context : CallbackContext, lang) -> int:
+    update.message.reply_text(texts[lang]["texts"]["language"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.language_keyboard(lang)))
+    return SET_LANG
+
+
+def duration(update: Update , context : CallbackContext, lang) -> int:
+    update.message.reply_text(texts[lang]["texts"]["time"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.time_keyboard()))
+    return SET_TIME
+
+
+def campus(update: Update , context : CallbackContext, lang) -> int:
+    update.message.reply_text(texts[lang]["texts"]["campus"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.location_keyboard(lang)))
+    return SET_CAMPUS
+
+function_map = {}
+function_mapping = {"search" : search , "now" : now , "preferences" : preferences , "language" : language , "time" : duration, "campus" : campus}
+for key in command_keys:
+    if key in function_mapping:
+        for alias in command_keys[key]:
+            function_map[alias] = function_mapping[key]
 
 
 
@@ -92,16 +149,9 @@ def initial_state(update:Update , context: CallbackContext) ->int:
     message = update.message.text
     lang = user_data_handler.get_lang(context)
     logging.info("%s in  choose initial state" , user.username)
+    
+    return function_map[message](update,context,lang)
 
-    #TODO multi language support
-    if message in command_keys["search"]:
-        update.message.reply_text(texts[lang]["texts"]['location'] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.search_keyboard(lang),one_time_keyboard=True))
-        return SET_LOCATION
-    elif message in command_keys["now"]:
-        pass
-    elif message in command_keys["preferences"]:
-        update.message.reply_text('test',reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
-        return SETTINGS
 
 
 def settings(update: Update , context : CallbackContext):
@@ -110,8 +160,7 @@ def settings(update: Update , context : CallbackContext):
     logging.info("%s in  settings" , user.username)
     lang = user_data_handler.get_lang(context)
     
-    update.message.reply_text(texts[lang]["texts"]["language"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.language_keyboard(lang)))
-    return SET_LANG
+    return function_map[message](update,context,lang)
 
 def set_language(update: Update , context : CallbackContext):
     user = update.message.from_user
@@ -125,9 +174,36 @@ def set_language(update: Update , context : CallbackContext):
     lang = message
     user_data_handler.update_lang(lang , context)
     
-    update.message.reply_text(texts[lang]["texts"]["settings"],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
+    update.message.reply_text(texts[lang]["texts"]["success"],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
     return SETTINGS
     
+def set_campus(update: Update , context: CallbackContext):
+    user = update.message.from_user
+    message = update.message.text
+    lang = user_data_handler.get_lang(context)
+    logging.info("%s in set campus" , user.username)
+
+    if not input_check.location_check(message , location_dict):
+        errorhandler.bonk(update , texts , lang)
+        return SET_CAMPUS
+
+    user_data_handler.update_campus(message , context)
+    update.message.reply_text(texts[lang]["texts"]["success"],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
+    return SETTINGS
+
+def set_time(update: Update , context: CallbackContext):
+    user = update.message.from_user
+    message = update.message.text
+    lang = user_data_handler.get_lang(context)
+    logging.info("%s in set time" , user.username)
+    
+    if not input_check.time_check(message):
+        errorhandler.bonk(update , texts , lang)
+        return SET_TIME
+
+    user_data_handler.update_time(message , context)
+    update.message.reply_text(texts[lang]["texts"]["success"],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
+    return SETTINGS
 
 
 def set_location_state(update: Update , context: CallbackContext) ->int:
@@ -272,7 +348,9 @@ def main():
             SET_START_TIME : [MessageHandler(Filters.text & ~Filters.command,set_start_time_state)],
             SET_END_AND_SEND : [MessageHandler(Filters.text & ~Filters.command, end_state)],
             SETTINGS : [MessageHandler(Filters.regex(regex.settings_regex()) , settings)],
-            SET_LANG : [MessageHandler(Filters.text & ~Filters.command , set_language)]
+            SET_LANG : [MessageHandler(Filters.text & ~Filters.command , set_language)],
+            SET_CAMPUS: [MessageHandler(Filters.text & ~Filters.command , set_campus)],
+            SET_TIME: [MessageHandler(Filters.text & ~Filters.command , set_time)]
             },
         fallbacks=[CommandHandler('terminate' , terminate)  , MessageHandler(Filters.regex(regex.info_regex()) , info), MessageHandler(Filters.regex(regex.cancel_command()), cancel)],
     

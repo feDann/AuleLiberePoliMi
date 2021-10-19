@@ -34,3 +34,23 @@ def reset_user_data(context: CallbackContext):
 
 def update_lang(lang , context:CallbackContext):
     context.user_data['preference']['lang'] = lang
+
+def update_campus(campus , context:CallbackContext):
+    context.user_data['preference']['campus'] = campus
+
+def update_time(time , context:CallbackContext):
+    context.user_data['preference']['campus'] = int(time)
+
+def get_user_preferences(context:CallbackContext):
+    time = 0
+    loc = None
+    try:
+        time = context.user_data["preference"]["time"]
+    except Exception:
+        print("time")
+    try:
+        loc = context.user_data["preference"]["campus"]
+    except Exception:
+        print("loc")
+    print(loc , time)
+    return loc , time

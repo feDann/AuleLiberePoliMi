@@ -12,7 +12,7 @@ class KeyboadBuilder:
     def initial_keyboard(self , lang):
         return [[self.texts[lang]["keyboards"]["search"]] ,[self.texts[lang]["keyboards"]["now"]] , [self.texts[lang]["keyboards"]["info"] ,self.texts[lang]["keyboards"]["preferences"] ]]
 
-    def search_keyboard(self , lang):
+    def location_keyboard(self , lang):
         return [[self.texts[lang]["keyboards"]["cancel"]]] + [[x]for x in self.location_dict]
 
     def day_keyboard(self , lang):
@@ -29,5 +29,8 @@ class KeyboadBuilder:
 
     def language_keyboard(self,lang):
         return [[self.texts[lang]["keyboards"]["cancel"]]] +[[l] for l in self.texts]
+
+    def time_keyboard(self):
+        return [[self.texts[lang]["keyboards"]["cancel"]]] + [[x] for x in range(1 , 9)]
 
 

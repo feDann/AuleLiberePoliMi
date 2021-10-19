@@ -52,3 +52,16 @@ def language_check(message ,texts):
     return True
 
 
+def time_check(message):
+    time = 0
+    try:
+        time = int(message)
+    except Exception as e:
+        return False
+    
+    if time < 1 or time > 8:
+        return False
+    
+    return True
+
+

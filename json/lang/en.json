@@ -9,10 +9,14 @@
         "error": "Use the buttons you fucking donkey!",
         "ops" : "In this time slot PoliMi is closed!\nI will give you instead the free classrooms of tomorrow morning from 8 a.m. to 10 a.m.",
         "terminate": "Conversation terminated!\nPress /start to start again the conversation!",
-        "cancel" : "Operation Canceled!",
+        "cancel" : "Going back⬅",
         "info" : "To start the Search process simply touch the \"🔍Search\" button and then insert using the custom keyboard the asked information\n\nThe \"🕒Now\" button allows you to quickly search the free classrooms for the next two hours!\n\nIf you wish to reset your preference about the location of the quick search simply press /start\n\nIf you want to take a look at the spaghetti code you can find it on GitHub <a href='https://github.com/feDann/AuleLiberePoliMi'>here</a>",
         "settings" : "This is the settings menu, from here you can choose your preferred language, preferred campus and duration time for the quick search!",
-        "language" : "Select your preferred language"
+        "language" : "Select your preferred language",
+        "campus" : "Choose the preferred campus for the quick search",
+        "time" : "Choose the amount of hours for the quick search",
+        "success" : "Done👍🏻",
+        "missing" : "The campus preference is missing!\nTo use this command set the campus preference"
     },
     "keyboards":
     {
