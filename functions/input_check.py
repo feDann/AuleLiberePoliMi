@@ -11,9 +11,9 @@ def location_check(message: str , location) -> bool:
 
 
 
-def day_check(message:str) -> bool:
+def day_check(message:str , texts , lang) -> bool:
     current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
-    if message != 'Today' and message != 'Tomorrow':
+    if message != texts[lang]["keyboards"]["today"] and message != texts[lang]["keyboards"]["tomorrow"]:
         chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
         if chosen_date < current_date or chosen_date > (current_date + timedelta(days=6)):
             return False

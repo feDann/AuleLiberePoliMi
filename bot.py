@@ -54,6 +54,14 @@ for lang in os.listdir(join(DIRPATH , 'json/lang')):
     with open(join(DIRPATH,'json' , 'lang' , lang) , 'r') as f:
         texts[lang[:2]] = json.load(f)
 
+
+command_keys = {}
+for lang in texts:
+    for key in texts[lang]["keyboards"]:
+        if key not in command_keys:
+            command_keys[key] = []
+        command_keys[key].append(texts[lang]["keyboards"][key])
+
 KEYBOARDS = keyboard_builder.KeyboadBuilder(texts , location_dict)
 
 TOKEN = os.environ.get("TOKEN")
@@ -86,12 +94,12 @@ def initial_state(update:Update , context: CallbackContext) ->int:
     logging.info("%s in  choose initial state" , user.username)
 
     #TODO multi language support
-    if message == "🔍Search":
+    if message in command_keys["search"]:
         update.message.reply_text(texts[lang]["texts"]['location'] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.search_keyboard(lang),one_time_keyboard=True))
         return SET_LOCATION
-    elif message == "🕒Now":
+    elif message in command_keys["now"]:
         pass
-    elif message == "⚙️Preferences":
+    elif message in command_keys["preferences"]:
         update.message.reply_text('test',reply_markup=ReplyKeyboardMarkup(KEYBOARDS.preference_keyboard(lang)))
         return SETTINGS
 
@@ -146,9 +154,9 @@ def set_day_state(update: Update , context: CallbackContext) ->int:
     lang = user_data_handler.get_lang(context)
     logging.info("%s in set day state" , user.username)
     
-    if input_check.day_check(message):
+    if input_check.day_check(message ,texts , lang):
         current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
-        message = current_date.strftime("%d/%m/%Y") if message == 'Today' else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
+        message = current_date.strftime("%d/%m/%Y") if message == texts[lang]["keyboards"]["today"] else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
     else:
         errorhandler.bonk(update , texts , lang)
         return SET_DAY
