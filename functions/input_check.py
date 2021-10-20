@@ -5,6 +5,9 @@ from typing import Tuple
 
 
 def location_check(message: str , location) -> bool:
+    """
+    Check if the location is in the location_dict
+    """
     if message not in location:
         return False
     return True
@@ -12,6 +15,9 @@ def location_check(message: str , location) -> bool:
 
 
 def day_check(message:str , texts , lang) -> bool:
+    """
+    check if the input is a valid date
+    """
     current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
     if message != texts[lang]["keyboards"]["today"] and message != texts[lang]["keyboards"]["tomorrow"]:
         chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
@@ -22,6 +28,9 @@ def day_check(message:str , texts , lang) -> bool:
 
 
 def start_time_check(message:str) -> Tuple[bool, int]:
+    """
+    check if the start_time is an integer and if it's in the limit range
+    """
     start_time = 0
     try:
         start_time = int(message)
@@ -35,7 +44,9 @@ def start_time_check(message:str) -> Tuple[bool, int]:
 
 
 def end_time_check(message:str , start_time:int) -> Tuple[bool, int]:
-    
+    """
+    check in the end_time is an integer and if it's in the limit range
+    """
     end_time = 0
     try:
         end_time = int(message)
@@ -47,12 +58,18 @@ def end_time_check(message:str , start_time:int) -> Tuple[bool, int]:
     return (True,end_time)
 
 def language_check(message ,texts):
+    """
+    check if the input is a correct language
+    """
     if message not in texts:
         return False
     return True
 
 
 def time_check(message):
+    """
+    check if the duration for the quick search preference is a valid input
+    """
     time = 0
     try:
         time = int(message)

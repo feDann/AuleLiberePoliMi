@@ -2,6 +2,11 @@ from telegram.constants import MAX_MESSAGE_LENGTH
 
 
 def room_builder_str(available_rooms):
+    """
+    this function take as input the list af all tha available classtooms
+    and parse the list into a list of multiple string in order to not exceed the telegram
+    len limit
+    """
     splitted_msg = []
     available_rooms_str = ""
     for building in available_rooms:

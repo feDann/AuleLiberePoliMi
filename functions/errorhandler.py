@@ -9,6 +9,10 @@ from telegram.ext import Updater, CallbackContext, CommandHandler
 
 
 def error_handler(update: object, context: CallbackContext) -> None:
+    """
+    error handler function for the bot, notify the developer of any issue and
+    send to him the stackstrace of the exception that occurred
+    """
     DEVELOPER_CHAT_ID = os.environ.get("DEVELOPER_CHAT_ID")
 
     logging.error(msg="Exception while handling an update:", exc_info=context.error)
@@ -32,6 +36,10 @@ def error_handler(update: object, context: CallbackContext) -> None:
 # Helper functions for error messages and string builder
 
 def bonk(update : Update , texts , lang):
+    """
+    function used to notify the users that they used a wrong input
+    i.e. they didn't use the custom keyboards
+    """
     update.message.reply_text(texts[lang]["texts"]['error']) 
     update.message.reply_photo(photo = open(join(dirname(__name__), 'photos/bonk.jpg'),'rb'))    
 

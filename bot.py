@@ -143,7 +143,7 @@ def duration(update: Update , context : CallbackContext, lang) -> int:
     """
     Send the keyboard for the duration and return to set_time state
     """
-    update.message.reply_text(texts[lang]["texts"]["time"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.time_keyboard()))
+    update.message.reply_text(texts[lang]["texts"]["time"] , reply_markup=ReplyKeyboardMarkup(KEYBOARDS.time_keyboard(lang)))
     return SET_TIME
 
 

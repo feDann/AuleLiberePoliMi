@@ -1,7 +1,12 @@
-
+"""
+This class builds all the regex for the commands that requires multiple aliases
+"""
 class RegexBuilder():
 
     def __init__(self,texts):
+        """
+        take as input the texts dict
+        """
         self.texts = texts
         self.regex = '^({})$'
 

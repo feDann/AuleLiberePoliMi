@@ -1,3 +1,6 @@
+"""
+This class is used to build all the custom keyboards
+"""
 import pytz
 from datetime import datetime , timedelta
 from utils.find_classrooms import MAX_TIME , MIN_TIME
@@ -6,6 +9,7 @@ import logging
 class KeyboadBuilder:
 
     def __init__(self,texts , location_dict):
+        """take as input the texts dict and the location dict and stores they in variables"""
         self.texts = texts
         self.location_dict = location_dict
 
@@ -30,7 +34,7 @@ class KeyboadBuilder:
     def language_keyboard(self,lang):
         return [[self.texts[lang]["keyboards"]["cancel"]]] +[[l] for l in self.texts]
 
-    def time_keyboard(self):
+    def time_keyboard(self, lang):
         return [[self.texts[lang]["keyboards"]["cancel"]]] + [[x] for x in range(1 , 9)]
 
 
