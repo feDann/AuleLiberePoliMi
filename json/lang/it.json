@@ -27,7 +27,7 @@
         "language" : "Lingua",
         "campus" : "Campus Preferito",
         "time" : "Durata della Ricerca",
-        "cancel" :  "/Annulla",
+        "cancel" :  "/Indietro",
         "today": "Oggi",
         "tomorrow" : "Domani" 
     }

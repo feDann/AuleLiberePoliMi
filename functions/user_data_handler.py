@@ -56,7 +56,7 @@ def update_time(time , context:CallbackContext):
     """
     update the time preference
     """
-    context.user_data['preference']['campus'] = int(time)
+    context.user_data['preference']['time'] = int(time)
 
 def get_user_preferences(context:CallbackContext):
     """
@@ -68,10 +68,10 @@ def get_user_preferences(context:CallbackContext):
     try:
         time = context.user_data["preference"]["time"]
     except Exception:
-        print("time")
+        pass
     try:
         loc = context.user_data["preference"]["campus"]
     except Exception:
-        print("loc")
-    print(loc , time)
+        pass
+    
     return loc , time

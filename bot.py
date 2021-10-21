@@ -121,6 +121,7 @@ def now(update: Update , context : CallbackContext, lang) -> int:
     context.user_data["date"] = datetime.now(pytz.timezone('Europe/Rome')).strftime("%d/%m/%Y")
     context.user_data["start_time"] = start_time
     update.message.text = end_time
+    print(loc , start_time)
     return end_state(update, context)
 
 
