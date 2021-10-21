@@ -13,9 +13,25 @@ TIME_SHIFT = 0.25
 MIN_TIME = 8
 MAX_TIME = 20
 
-# Return a dict with all the info about the classrooms for the chosen day , 
-# the function makes a get requests to the URL and then 
-# build a dict with the classes information stored on the html table (the code may not be perfect 🥲)
+GARBAGE = ["PROVA_ASICT" , "2.2.1-D.I."]
+
+"""
+Clean the dict with all the class occupancies from rooms that don't exists or are unreacheable
+"""
+def clean_data(infos):
+    for building in infos:
+        for room in GARBAGE:
+            if room in infos[building]:
+                del infos[building][room]          
+            
+    return infos
+
+
+"""
+Return a dict with all the info about the classrooms for the chosen day , 
+the function makes a get requests to the URL and then 
+build a dict with the classes information stored on the html table (the code may not be perfect 🥲)
+"""
 
 def find_classrooms(location , day , month , year):
     info = {} 
@@ -35,9 +51,10 @@ def find_classrooms(location , day , month , year):
             if BUILDING in tds[0].attrs['class']:
                 buildingName = tds[0].string
                 try:
-                    buildingName = re.search('(Edificio.*)' , buildingName).group(1) #take only the building name
+                    # buildingName = re.search('(Edificio.*)' , buildingName).group(1) #take only the building name
+                    buildingName = buildingName.split('-')[2]
                 except:
-                    pass
+                    print(buildingName)
                 if buildingName not in info:
                     info[buildingName] = {}
         else:
@@ -45,7 +62,7 @@ def find_classrooms(location , day , month , year):
             time = 7.75
             for td in tds:
                 if ROOM in td.attrs['class']:
-                    room = td.find('a').string
+                    room = td.find('a').string.replace(" ","")
                     link = td.find('a')['href']
                     
                     if room not in info[buildingName]:
@@ -64,12 +81,12 @@ def find_classrooms(location , day , month , year):
                     info[buildingName][room]['lessons'].append(lesson)
                 else:
                     time += TIME_SHIFT
-    return info
+    return clean_data(info)
 
 
 
 
 if __name__ == "__main__":
-    infos =  find_classrooms('MIA' , 6 , 10 , 2021)
-    with open('infos_a.json' , 'w') as outfile:
+    infos =  find_classrooms('MIA' , 21 , 10 , 2021)
+    with open('json/infos_a.json' , 'w') as outfile:
         json.dump(infos , outfile)

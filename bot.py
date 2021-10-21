@@ -8,8 +8,8 @@ from os.path import join , dirname
 from dotenv import load_dotenv
 import telegram
 from telegram.message import Message
-from utils.free_classroom import find_free_room
-from utils.find_classrooms import TIME_SHIFT , MAX_TIME , MIN_TIME
+from search.free_classroom import find_free_room
+from search.find_classrooms import TIME_SHIFT , MAX_TIME , MIN_TIME
 from telegram import  Update , ReplyKeyboardMarkup ,ReplyKeyboardRemove  
 from telegram.ext import (PicklePersistence,Updater,CommandHandler,ConversationHandler,CallbackContext,MessageHandler , Filters , CallbackQueryHandler)
 from datetime import datetime , timedelta
@@ -361,6 +361,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
     
     day , month , year = date.split('/')
     available_rooms = find_free_room(float(start_time + TIME_SHIFT) , float(end_time + TIME_SHIFT) , location_dict[location],int(day) , int(month) , int(year))  
+    update.message.reply_text('{}   {}   {}-{}'.format(date , location , start_time ,end_time))
     for m in string_builder.room_builder_str(available_rooms):
         update.message.reply_chat_action(telegram.ChatAction.TYPING)
         update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
@@ -408,6 +409,7 @@ def cancel(update: Update, context: CallbackContext):
     user = update.message.from_user
     lang = user_data_handler.get_lang(context)
     initial_keyboard = KEYBOARDS.initial_keyboard(lang)
+    user_data_handler.reset_user_data(context)
     logging.info("User %s canceled.", user.username)
     update.message.reply_text(texts[lang]["texts"]['cancel'] ,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
     return INITIAL_STATE
