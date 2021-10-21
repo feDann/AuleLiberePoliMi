@@ -1,6 +1,6 @@
 import pytz
 from datetime import datetime , timedelta
-from utils.find_classrooms import MAX_TIME , MIN_TIME
+from search.find_classrooms import MAX_TIME , MIN_TIME
 from typing import Tuple
 
 
