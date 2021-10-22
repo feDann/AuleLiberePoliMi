@@ -1,32 +1,64 @@
-from logging import root
+from email.policy import default
 from .find_classrooms import find_classrooms
-import datetime
+from collections import defaultdict
 from pprint import pprint
+from logging import root
+import datetime
 import json 
 
-def _is_room_free(lessons , starting_time , ending_time):
+MAX_TIME = 20
+
+def _is_room_free(lessons, starting_time, ending_time):
     if len(lessons) == 0:
-        return True
+        return (True, MAX_TIME)
+
+    until = None
+
     for lesson in lessons:
         start = float(lesson['from'])
         end = float(lesson['to'])
+
         if starting_time <= start and start < ending_time:
-            return False
-        if start <= starting_time and end > starting_time:
-            return False
-    return True
-        
+            return (False, None)
+
+        if end <= starting_time and end > starting_time:
+            return (False, None)
+
+        if not until or start < until:
+            until = start
+
+    return (True, until)
+
+
+# def _is_room_free(lessons , starting_time , ending_time):
+#     if len(lessons) == 0:
+#         return True
+#     for lesson in lessons:
+#         start = float(lesson['from'])
+#         end = float(lesson['to'])
+#         if starting_time <= start and start < ending_time:
+#             return False
+#         if start <= starting_time and end > starting_time:
+#             return False
+#     return True
+
 
 def find_free_room(starting_time , ending_time , location , day , month , year):
-    free_rooms = {}
+    free_rooms = defaultdict(list)
     infos = find_classrooms(location , day , month , year)
+
     for building in infos:
         for room in infos[building]:
             lessons = infos[building][room]['lessons']
-            if _is_room_free(lessons , starting_time , ending_time):
-                if building not in free_rooms:
-                    free_rooms[building] = []
-                room_info = {'name' : room , 'link':infos[building][room]['link']}
+            free, until = _is_room_free(lessons , starting_time , ending_time)
+
+            if free:
+                room_info = {
+                    'name' : room , 
+                    'link':infos[building][room]['link'], 
+                    'until': until
+                }
+                
                 free_rooms[building].append(room_info)
     
     return free_rooms
