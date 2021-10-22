@@ -1,5 +1,4 @@
-from telegram import Update, ParseMode
-from telegram.ext import Updater, CallbackContext, CommandHandler
+from telegram.ext import  CallbackContext
 
 def get_lang(context:CallbackContext):
     """
@@ -44,18 +43,24 @@ def update_lang(lang , context:CallbackContext):
     """
     update the language preference
     """
+    if  "preference" not in context.user_data:
+        reset_user_data(context)
     context.user_data['preference']['lang'] = lang
 
 def update_campus(campus , context:CallbackContext):
     """
     update the campus preference
     """
+    if  "preference" not in context.user_data:
+        reset_user_data(context)
     context.user_data['preference']['campus'] = campus
 
 def update_time(time , context:CallbackContext):
     """
     update the time preference
     """
+    if  "preference" not in context.user_data:
+        reset_user_data(context)
     context.user_data['preference']['time'] = int(time)
 
 def get_user_preferences(context:CallbackContext):
@@ -63,7 +68,7 @@ def get_user_preferences(context:CallbackContext):
     return a tuple of location , time that represent the preferred campus and time
     duration for the quick search
     """
-    time = 0
+    time = 2 # default value for quick search
     loc = None
     try:
         time = context.user_data["preference"]["time"]
