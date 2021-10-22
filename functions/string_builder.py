@@ -14,11 +14,8 @@ def room_builder_str(available_rooms):
             splitted_msg.append(available_rooms_str)
             available_rooms_str = ""
         available_rooms_str += '\n<b>{}</b>\n'.format(building)
-        split = 0
         for room in available_rooms[building]:
-            available_rooms_str += ' <a href ="{}">{}</a>  (until {})  '.format(room['link'], room['name'], room['until'])
-            split += 1
-            if split % 3 == 0:
-                available_rooms_str += '\n'
+            available_rooms_str += ' <a href ="{}">{:^10}</a> (until {})\n'.format(room['link'], room['name'], room['until'])
+
     splitted_msg.append(available_rooms_str)
     return splitted_msg
