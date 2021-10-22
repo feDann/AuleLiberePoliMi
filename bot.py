@@ -79,7 +79,7 @@ def room_builder_str(available_rooms):
             available_rooms_str = ""
         available_rooms_str += '\n<b>{}</b>\n'.format(building)
         for room in available_rooms[building]:
-            available_rooms_str += ' <a href ="{}">{}</a>\n'.format(room['link'],room['name'])
+            available_rooms_str += ' <a href ="{}">{} </a> (free until {})\n'.format(room['link'], room['name'], room['until'])
     splitted_msg.append(available_rooms_str)
     return splitted_msg
 
