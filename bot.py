@@ -113,7 +113,7 @@ def now(update: Update , context : CallbackContext, lang) -> int:
         return INITIAL_STATE
     
     start_time = int(datetime.now(pytz.timezone('Europe/Rome')).strftime('%H'))
-    if start_time > MAX_TIME or start_time < MIN_TIME:
+    if start_time >= MAX_TIME or start_time < MIN_TIME:
         update.message.reply_text(texts[lang]["texts"]['ops'])
         start_time = MIN_TIME
     end_time = start_time + dur if start_time + dur < MAX_TIME else MAX_TIME
