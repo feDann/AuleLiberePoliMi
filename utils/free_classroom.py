@@ -4,22 +4,28 @@ from pprint import pprint
 import datetime
 import json
 
+MAX_TIME = 20
 
 def _is_room_free(lessons, starting_time, ending_time):
     if len(lessons) == 0:
-        return True
+        return (True, MAX_TIME)
+
+    until = None
 
     for lesson in lessons:
         start = float(lesson['from'])
         end = float(lesson['to'])
 
         if starting_time <= start and start < ending_time:
-            return False
+            return (False, None)
 
         if start <= starting_time and end > starting_time:
-            return False
+            return (False, None)
 
-    return True
+        if not until or start < until:
+            until = start
+
+    return (True, until)
 
 
 def find_free_room(starting_time, ending_time, location, day, month, year):
@@ -30,11 +36,17 @@ def find_free_room(starting_time, ending_time, location, day, month, year):
         for room in infos[building]:
             lessons = infos[building][room]['lessons']
 
-            if _is_room_free(lessons, starting_time, ending_time):
-                if building not in free_rooms:
-                    free_rooms[building] = []
-                    
-                room_info = {'name': room, 'link': infos[building][room]['link']}
+            free, until = _is_room_free(lessons, starting_time, ending_time)
+
+            if free and building not in free_rooms:
+                free_rooms[building] = []
+
+                room_info = {
+                    'name': room,
+                    'until': until,
+                    'link': infos[building][room]['link']
+                }
+                
                 free_rooms[building].append(room_info)
 
     return free_rooms
