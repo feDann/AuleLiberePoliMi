@@ -302,14 +302,12 @@ def set_day_state(update: Update , context: CallbackContext) ->int:
     lang = user_data_handler.get_lang(context)
     logging.info("%s in set day state" , user.username)
     
-    if input_check.day_check(message ,texts , lang):
-        current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
-        message = current_date.strftime("%d/%m/%Y") if message == texts[lang]["keyboards"]["today"] else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
-    else:
+    ret , chosen_date = input_check.day_check(message ,texts , lang)
+    if not ret:
         errorhandler.bonk(update , texts , lang)
         return SET_DAY
 
-    context.user_data['date'] = message
+    context.user_data['date'] = chosen_date
     update.message.reply_text(texts[lang]["texts"]['starting_time'],reply_markup=ReplyKeyboardMarkup(KEYBOARDS.start_time_keyboard(lang) , one_time_keyboard=True) )
     
     return SET_START_TIME

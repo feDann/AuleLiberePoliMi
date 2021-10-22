@@ -18,12 +18,16 @@ def day_check(message:str , texts , lang) -> bool:
     """
     check if the input is a valid date
     """
+    return_date = message
     current_date = datetime.now(pytz.timezone('Europe/Rome')).date()
     if message != texts[lang]["keyboards"]["today"] and message != texts[lang]["keyboards"]["tomorrow"]:
         chosen_date = datetime.strptime(message, '%d/%m/%Y').date()
         if chosen_date < current_date or chosen_date > (current_date + timedelta(days=6)):
-            return False
-    return True
+            return False , return_date
+    else:
+        return_date = current_date.strftime("%d/%m/%Y") if message == texts[lang]["keyboards"]["today"] else (current_date + timedelta(days=1)).strftime("%d/%m/%Y")
+        
+    return True , return_date
 
 
 
