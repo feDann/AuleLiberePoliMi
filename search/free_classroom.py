@@ -30,19 +30,6 @@ def _is_room_free(lessons, starting_time, ending_time):
     return (True, until)
 
 
-# def _is_room_free(lessons , starting_time , ending_time):
-#     if len(lessons) == 0:
-#         return True
-#     for lesson in lessons:
-#         start = float(lesson['from'])
-#         end = float(lesson['to'])
-#         if starting_time <= start and start < ending_time:
-#             return False
-#         if start <= starting_time and end > starting_time:
-#             return False
-#     return True
-
-
 def find_free_room(starting_time , ending_time , location , day , month , year):
     free_rooms = defaultdict(list)
     infos = find_classrooms(location , day , month , year)
