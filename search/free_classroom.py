@@ -1,5 +1,5 @@
 from email.policy import default
-from .find_classrooms import find_classrooms
+from find_classrooms import find_classrooms
 from collections import defaultdict
 from pprint import pprint
 from logging import root
@@ -21,7 +21,7 @@ def _is_room_free(lessons, starting_time, ending_time):
         if starting_time <= start and start < ending_time:
             return (False, None)
 
-        if end <= starting_time and end > starting_time:
+        if start <= starting_time and end > starting_time:
             return (False, None)
 
         if not until or start < until:
@@ -53,6 +53,6 @@ def find_free_room(starting_time , ending_time , location , day , month , year):
 
 if __name__ == "__main__":
     now = datetime.datetime.now()
-    info = find_free_room(14.25 , 18.25 , 'MIA', 6 , 10 , 2021)
+    info = find_free_room(9.25 , 12.25 , 'MIA', 25 , 10 , 2021)
     with open('infos_a.json' , 'w') as outfile:
         json.dump(info , outfile)
