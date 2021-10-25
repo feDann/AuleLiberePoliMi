@@ -1,5 +1,5 @@
 from email.policy import default
-from find_classrooms import find_classrooms
+from .find_classrooms import find_classrooms
 from collections import defaultdict
 from pprint import pprint
 from logging import root
