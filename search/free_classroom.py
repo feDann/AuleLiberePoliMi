@@ -9,10 +9,10 @@ import json
 MAX_TIME = 20
 
 def _is_room_free(lessons, starting_time, ending_time):
+    until = MAX_TIME
+    
     if len(lessons) == 0:
-        return (True, MAX_TIME)
-
-    until = None
+        return (True, until)
 
     for lesson in lessons:
         start = float(lesson['from'])
@@ -24,7 +24,7 @@ def _is_room_free(lessons, starting_time, ending_time):
         if start <= starting_time and end > starting_time:
             return (False, None)
 
-        if not until or start < until:
+        if ending_time <= start and until == MAX_TIME:
             until = start
 
     return (True, until)
