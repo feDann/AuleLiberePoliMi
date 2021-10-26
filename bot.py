@@ -358,13 +358,17 @@ def end_state(update: Update , context: CallbackContext) ->int:
     logging.info("%s in the set end time state and search" , user.username)
     
     day , month , year = date.split('/')
-    available_rooms = find_free_room(float(start_time + TIME_SHIFT) , float(end_time + TIME_SHIFT) , location_dict[location],int(day) , int(month) , int(year))  
-    update.message.reply_text('{}   {}   {}-{}'.format(date , location , start_time ,end_time))
-    for m in string_builder.room_builder_str(available_rooms):
-        update.message.reply_chat_action(telegram.ChatAction.TYPING)
-        update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
-    
-    logging.info("%s search was: %s %s %d %d" , user.username , location , date , start_time , end_time )
+    try:
+        available_rooms = find_free_room(float(start_time + TIME_SHIFT) , float(end_time + TIME_SHIFT) , location_dict[location],int(day) , int(month) , int(year))  
+        update.message.reply_text('{}   {}   {}-{}'.format(date , location , start_time ,end_time))
+        for m in string_builder.room_builder_str(available_rooms , texts[lang]["texts"]["until"]):
+            update.message.reply_chat_action(telegram.ChatAction.TYPING)
+            update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
+        
+        logging.info("%s search was: %s %s %d %d" , user.username , location , date , start_time , end_time )
+    except Exception as e:
+        logging.info("Exception occurred during find_free_room ")
+        update.message.reply_text(texts[lang]["texts"]["exception"] ,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard) ,disable_web_page_preview=True)
     
     
     user_data_handler.reset_user_data(context)
