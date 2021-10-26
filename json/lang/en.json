@@ -16,7 +16,9 @@
         "campus" : "Choose the preferred campus for the quick search",
         "time" : "Choose the amount of hours for the quick search",
         "success" : "Done👍🏻",
-        "missing" : "The campus preference is missing!\nTo use this command set the campus preference"
+        "missing" : "The campus preference is missing!\nTo use this command set the campus preference",
+        "exception" : "An exception occurred during the search process☹️\nTry again later or contact <a href='telegram.me/daniele_ferrazzo'>me</a> for further info",
+        "until" : "free until"
     },
     "keyboards":
     {

@@ -16,7 +16,9 @@
         "campus" : "Seleziona il tuo campus preferito per la ricerca rapida",
         "time" : "Seleziona il numero di ore per la ricerca rapida",
         "success" : "Fatto👍🏻",
-        "missing" : "Non hai ancora indicato il tuo campus preferito!\nPer usare questa funzione devi prima impostare le tue preferenze"
+        "missing" : "Non hai ancora indicato il tuo campus preferito!\nPer usare questa funzione devi prima impostare le tue preferenze",
+        "exception" : "C'è stato un problema durante la ricerca☹️\nRitenta più tardi o contattami  <a href='telegram.me/daniele_ferrazzo'>qui</a> per ulteriori informazioni",
+        "until" : "fino alle"
     },
     "keyboards" : 
     {
