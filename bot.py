@@ -367,7 +367,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
         
         logging.info("%s search was: %s %s %d %d" , user.username , location , date , start_time , end_time )
     except Exception as e:
-        logging.info("Exception occurred during find_free_room ")
+        logging.info("Exception occurred during find_free_room, search was: %s  %s  %d-%d " , date , location , start_time , end_time)
         update.message.reply_text(texts[lang]["texts"]["exception"] ,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard) ,disable_web_page_preview=True)
     
     
