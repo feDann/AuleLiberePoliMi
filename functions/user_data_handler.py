@@ -14,15 +14,17 @@ def get_lang(context:CallbackContext):
 
 def initialize_user_data(context: CallbackContext):
     """
-    Initialize the user_data and set as default language english, and as default time 2 hours
+    If the preferences are not saved in the user_data, this function will
+    initialize the user_data and set as default language english, and as default time 2 hours
     """
-    context.user_data.clear()
-    lang = 'en' # Default language    
-    context.user_data['preference'] = {} # set the default language
-    context.user_data['preference']['lang'] = lang
-    context.user_data['preference']['time'] = 2
+    if "preference" not in context.user_data:
+        context.user_data.clear()
+        lang = 'en' # Default language    
+        context.user_data['preference'] = {} # set the default language
+        context.user_data['preference']['lang'] = lang
+        context.user_data['preference']['time'] = 2
 
-    return lang
+    return get_lang(context)
 
 
 def reset_user_data(context: CallbackContext):

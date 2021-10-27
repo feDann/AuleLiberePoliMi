@@ -385,6 +385,7 @@ def terminate(update: Update, context: CallbackContext) -> int:
     """
     user = update.message.from_user
     lang = user_data_handler.get_lang(context)
+    context.user_data.clear()
 
     logging.info("%s terminated the conversation.", user.username)
     update.message.reply_text(texts[lang]["texts"]['terminate'], reply_markup=ReplyKeyboardRemove())
