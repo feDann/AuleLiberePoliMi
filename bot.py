@@ -105,7 +105,7 @@ def now(update: Update , context : CallbackContext, lang) -> int:
     the preferences of the user call the end_state function, otherwise return to the initial_state
     """
     user = update.message.from_user
-    logging.info("%s in now state" , user.username)
+    logging.info("%d : %s in now state" , user.id ,  user.username)
     loc, dur = user_data_handler.get_user_preferences(context)
 
     if loc is None:
@@ -193,7 +193,7 @@ def initial_state(update:Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    logging.info("%s in  choose initial state" , user.username)
+    logging.info("%d : %s in  choose initial state" , user.id , user.username)
     
     return function_map[message](update,context,lang)
 
@@ -206,7 +206,7 @@ def settings(update: Update , context : CallbackContext):
     """
     user = update.message.from_user
     message = update.message.text
-    logging.info("%s in  settings" , user.username)
+    logging.info("%d : %s in  settings" , user.id , user.username)
     lang = user_data_handler.get_lang(context)
     
     return function_map[message](update,context,lang)
@@ -220,7 +220,7 @@ def set_language(update: Update , context : CallbackContext):
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    logging.info("%s in set language" , user.username)
+    logging.info("%d : %s in set language" ,user.id , user.username)
     
     if not input_check.language_check(message , texts):
         errorhandler.bonk(update , texts , lang)
@@ -240,7 +240,7 @@ def set_campus(update: Update , context: CallbackContext):
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    logging.info("%s in set campus" , user.username)
+    logging.info("%d : %s in set campus" ,user.id , user.username)
 
     if not input_check.location_check(message , location_dict):
         errorhandler.bonk(update , texts , lang)
@@ -259,7 +259,7 @@ def set_time(update: Update , context: CallbackContext):
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    logging.info("%s in set time" , user.username)
+    logging.info("%d : %s in set time" ,user.id ,  user.username)
     
     if not input_check.time_check(message):
         errorhandler.bonk(update , texts , lang)
@@ -278,7 +278,7 @@ def set_location_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    logging.info("%s in  set location state" , user.username)
+    logging.info("%d : %s in  set location state" ,user.id , user.username)
 
     if not input_check.location_check(message,location_dict):
         errorhandler.bonk(update ,texts , lang )
@@ -300,7 +300,7 @@ def set_day_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    logging.info("%s in set day state" , user.username)
+    logging.info("%d : %s in set day state" ,user.id , user.username)
     
     ret , chosen_date = input_check.day_check(message ,texts , lang)
     if not ret:
@@ -322,7 +322,7 @@ def set_start_time_state(update: Update , context: CallbackContext) ->int:
     user = update.message.from_user
     message = update.message.text
     lang = user_data_handler.get_lang(context)
-    logging.info("%s in set start state" , user.username)
+    logging.info("%d : %s in set start state" ,user.id , user.username)
     ret,start_time = input_check.start_time_check(message)
     
     if not ret:
@@ -355,7 +355,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
         errorhandler.bonk(update , texts , lang )
         return SET_END_AND_SEND
 
-    logging.info("%s in the set end time state and search" , user.username)
+    logging.info("%d : %s in the set end time state and search" ,user.id , user.username)
     
     day , month , year = date.split('/')
     try:
@@ -365,7 +365,7 @@ def end_state(update: Update , context: CallbackContext) ->int:
             update.message.reply_chat_action(telegram.ChatAction.TYPING)
             update.message.reply_text(m,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
         
-        logging.info("%s search was: %s %s %d %d" , user.username , location , date , start_time , end_time )
+        logging.info("%d : %s search was: %s %s %d %d" , user.id , user.username , location , date , start_time , end_time )
     except Exception as e:
         logging.info("Exception occurred during find_free_room, search was: %s  %s  %d-%d " , date , location , start_time , end_time)
         update.message.reply_text(texts[lang]["texts"]["exception"] ,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard) ,disable_web_page_preview=True)
@@ -387,7 +387,7 @@ def terminate(update: Update, context: CallbackContext) -> int:
     lang = user_data_handler.get_lang(context)
     context.user_data.clear()
 
-    logging.info("%s terminated the conversation.", user.username)
+    logging.info("%d : %s terminated the conversation.", user.id , user.username)
     update.message.reply_text(texts[lang]["texts"]['terminate'], reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
@@ -401,7 +401,7 @@ def info(update: Update, context: CallbackContext):
     user = update.message.from_user
     lang = user_data_handler.get_lang(context)
     initial_keyboard = KEYBOARDS.initial_keyboard(lang)
-    logging.info("User %s asked for more info.", user.username)
+    logging.info("%d : %s asked for more info.", user.id , user.username)
     update.message.reply_text(texts[lang]["texts"]['info'],parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
     return
 
@@ -413,7 +413,7 @@ def cancel(update: Update, context: CallbackContext):
     lang = user_data_handler.get_lang(context)
     initial_keyboard = KEYBOARDS.initial_keyboard(lang)
     user_data_handler.reset_user_data(context)
-    logging.info("User %s canceled.", user.username)
+    logging.info("%d : %s canceled.", user.id , user.username)
     update.message.reply_text(texts[lang]["texts"]['cancel'] ,parse_mode=ParseMode.HTML , reply_markup=ReplyKeyboardMarkup(initial_keyboard))
     return INITIAL_STATE
 
