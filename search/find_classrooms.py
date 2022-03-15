@@ -2,7 +2,6 @@ from logging import root
 import requests
 from bs4 import BeautifulSoup
 import json
-import re
 
 URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/OccupazioniGiornoEsatto.do"
 BASE_URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/"
@@ -14,6 +13,7 @@ MIN_TIME = 8
 MAX_TIME = 20
 
 GARBAGE = ["PROVA_ASICT" , "2.2.1-D.I."]
+
 
 """
 Clean the dict with all the class occupancies from rooms that don't exists or are unreacheable
@@ -44,7 +44,11 @@ def find_classrooms(location , day , month , year):
     soup = BeautifulSoup(r.text, 'html.parser')
     tableContainer = soup.find("div", {"id": "tableContainer"})
     tableRows = tableContainer.find_all('tr')[3:] #remove first three headers
-    
+
+    with open("json/roomsWithPower.json","r") as j:
+        rwp = json.load(j)
+        j.close()
+
     for row in tableRows:
         tds = row.find_all('td')
         if 'class' not in row.attrs:
@@ -64,11 +68,13 @@ def find_classrooms(location , day , month , year):
                 if ROOM in td.attrs['class']:
                     room = td.find('a').string.replace(" ","")
                     link = td.find('a')['href']
+                    id_aula = int(link.split("=")[-1])
                     
                     if room not in info[buildingName]:
                         info[buildingName][room] = {}
                         info[buildingName][room]['link'] = BASE_URL + link
                         info[buildingName][room]['lessons'] = []
+                        info[buildingName][room]['powerPlugs'] = id_aula in rwp
 
                 elif LECTURE in td.attrs['class'] and room != '':
                     duration = int(td.attrs['colspan'])
@@ -89,4 +95,4 @@ def find_classrooms(location , day , month , year):
 if __name__ == "__main__":
     infos =  find_classrooms('MIA' , 25 , 10 , 2021)
     with open('json/infos_a.json' , 'w') as outfile:
-        json.dump(infos , outfile)
+        json.dump(infos , outfile, indent=3)
