@@ -46,8 +46,7 @@ def find_classrooms(location , day , month , year):
     tableRows = tableContainer.find_all('tr')[3:] #remove first three headers
 
     with open("json/roomsWithPower.json","r") as j:
-        rwp = json.load(j)
-        j.close()
+        rwp = set(json.load(j))
 
     for row in tableRows:
         tds = row.find_all('td')
