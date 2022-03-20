@@ -15,7 +15,8 @@ def room_builder_str(available_rooms , until):
             available_rooms_str = ""
         available_rooms_str += '\n<b>{}</b>\n'.format(building)
         for room in available_rooms[building]:
-            available_rooms_str += ' <a href ="{}">{:^10}</a> ({} {})\n'.format(room['link'], room['name'], until , room['until'])
+            emoji = "🔌" if room['powerPlugs'] else ''
+            available_rooms_str += ' <a href ="{}">{:^10}</a> ({} {}) {}\n'.format(room['link'], room['name'], until , room['until'],emoji)
 
     splitted_msg.append(available_rooms_str)
     return splitted_msg

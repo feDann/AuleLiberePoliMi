@@ -38,12 +38,12 @@ def find_free_room(starting_time , ending_time , location , day , month , year):
         for room in infos[building]:
             lessons = infos[building][room]['lessons']
             free, until = _is_room_free(lessons , starting_time , ending_time)
-
             if free:
                 room_info = {
                     'name' : room , 
                     'link':infos[building][room]['link'], 
-                    'until': until
+                    'until': until,
+                    'powerPlugs': infos[building][room]['powerPlugs']
                 }
                 
                 free_rooms[building].append(room_info)
