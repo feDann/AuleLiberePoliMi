@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+  mongo-db:
+    image: mongo:5.0.12
+    restart: always
+    ports: 
+      - "27017:27017"
+    healthcheck:
+      test: test $$(echo "rs.initiate().ok || rs.status().ok" | mongo --quiet) -eq 1
+      interval: 10s
+      start_period: 30s
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+  bot:
+    build:
+      context: .
+      dockerfile: docker/bot/DockerFile
+    depends_on:
+      - mongo-db
+    environment:
+      - DOCKER=1
+    restart: always

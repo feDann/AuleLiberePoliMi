@@ -13,7 +13,10 @@ python-dotenv = "*"
 black = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10.6"
 
 [pipenv]
 allow_prereleases = true
+
+[scripts]
+start = "python ./src/bot.py"
