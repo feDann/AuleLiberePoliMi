@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "aule_libere_polimi"
+version = "0.1.0"
+description = ""
+authors = ["feDann <daniele99@ferrazzo.it>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-telegram-bot = "^20.0a4"
+beautifulsoup4 = "^4.11.1"
+requests = "^2.28.1"
+beanie = "^1.13.0"
+python-dotenv = "^0.21.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.10.0"
+
+[tool.poetry.group.dev.dependencies]
+taskipy = "^1.10.3"
+
+[tool.taskipy.tasks]
+"start" = "python run.py" 
+"docker:start" = "docker-compose up -d --build"
+"docker:force-create" = "docker-compose up -d --build --no-deps --force-recreate"
+"docker:stop" = "docker-compose stop"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

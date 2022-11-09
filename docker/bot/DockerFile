@@ -1,13 +1,37 @@
-FROM python:3-alpine AS build
+FROM python:3.10
+
 WORKDIR /app
-ENV PATH=/app/bin:$PATH
+
+# Metadata
+LABEL name="project-goldberg-core"
+LABEL maintainer="FedSan"
+LABEL version="0.1.0"
+
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8
+
+# ssh setup
+# Install required packages
+RUN apt-get update && apt-get install openssh-client git
 
 
-RUN pip3 install pip -U && pip3 install pipenv
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org/ | POETRY_HOME=/opt/poetry python && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create false
 
-COPY Pipfile* /app/
-RUN pipenv install --dev
+COPY ./pyproject.toml ./poetry.lock* /app/
+
+# ssh prefix to download private repos
+RUN --mount=type=ssh poetry install --no-root
 
 COPY . /app
 
-CMD pipenv run start
+CMD python run.py
