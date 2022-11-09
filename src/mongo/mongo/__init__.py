@@ -1,0 +1,1 @@
+from mongo.models import User, SearchHistory, Preferences

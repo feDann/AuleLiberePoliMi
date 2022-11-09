@@ -5,7 +5,7 @@ import traceback
 import os
 from os.path import join, dirname
 from telegram import Update, ParseMode
-from telegram.ext import Updater, CallbackContext, CommandHandler
+from telegram.ext import CallbackContext
 
 
 def error_handler(update: object, context: CallbackContext) -> None:

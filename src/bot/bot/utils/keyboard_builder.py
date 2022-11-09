@@ -3,7 +3,7 @@ This class is used to build all the custom keyboards
 """
 import pytz
 from datetime import datetime , timedelta
-from search.find_classrooms import MAX_TIME , MIN_TIME
+from scraper.find_classrooms import MAX_TIME , MIN_TIME
 import logging
 
 class KeyboadBuilder:

@@ -1,13 +1,4 @@
-import json
 import logging
-import os
-import sys
-import time
-from datetime import datetime, timedelta
-from os.path import dirname, join
-
-import pytz
-import telegram
 from dotenv import load_dotenv
 from telegram import ParseMode, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
@@ -19,89 +10,6 @@ from telegram.ext import (
     Filters,
     MessageHandler,
 )
-
-from bot.utils import (
-    errorhandler,
-    input_check,
-    keyboard_builder,
-    regex_builder,
-    string_builder,
-    user_data_handler,
-)
-
-from scraper.find_classrooms import MAX_TIME, MIN_TIME, TIME_SHIFT
-from scraper import find_free_room
-
-
-from telegram import __version__ as TG_VER
-
-try:
-    from telegram import __version_info__
-except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0) 
-
-if __version_info__ < (20, 0, 0, "alpha", 1):
-    raise RuntimeError(
-        f"This bot is not compatible with your current PTB version {TG_VER}."
-    )
-
-
-LOGPATH = "log/"
-DIRPATH = dirname(__file__)
-
-
-"""
-Create a dir for the logs file
-"""
-if not os.path.exists(LOGPATH):
-    os.mkdir(LOGPATH)
-
-"""
-Basic logger config
-"""
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("{0}{1}.log".format(LOGPATH, str(time.time()))),
-        logging.StreamHandler(sys.stdout),
-    ],
-)
-
-dotenv_path = join(DIRPATH, ".env")
-load_dotenv(dotenv_path)
-
-
-"""
-Code below load all the query params for the campus in a dict
-"""
-location_dict = {}
-with open(join(DIRPATH, "json/location.json")) as location_json:
-    location_dict = json.load(location_json)
-
-"""
-Code below load in a dict all the text messages in all the available languages
-"""
-texts = {}
-for lang in os.listdir(join(DIRPATH, "json/lang")):
-    with open(join(DIRPATH, "json", "lang", lang), "r") as f:
-        texts[lang[:2]] = json.load(f)
-
-"""
-The fragment of code below load in a dict all the aliases for the various commands
-eg for search: Search, Cerca ecc
-"""
-command_keys = {}
-for lang in texts:
-    for key in texts[lang]["keyboards"]:
-        if key not in command_keys:
-            command_keys[key] = []
-        command_keys[key].append(texts[lang]["keyboards"][key])
-
-KEYBOARDS = keyboard_builder.KeyboadBuilder(texts, location_dict)
-
-TOKEN = os.environ.get("TOKEN")
-
 
 """
 States for the conversation handler
@@ -118,7 +26,6 @@ States for the conversation handler
     SET_TIME,
     NOW,
 ) = range(10)
-
 
 """
 The Functions below are used for the various commands in the states, first three functions are
@@ -138,7 +45,6 @@ async def search(update: Update, context: CallbackContext, lang) -> int:
         ),
     )
     return SET_LOCATION
-
 
 async def now(update: Update, context: CallbackContext, lang) -> int:
     """
@@ -215,46 +121,7 @@ async def campus(update: Update, context: CallbackContext, lang) -> int:
     return SET_CAMPUS
 
 
-"""
-Code below map in a dict all the aliases for a certain function,
-e.g. map all the aliases of search (search, cerca, ecc) to the search function
-"""
-function_map = {}
-function_mapping = {
-    "search": search,
-    "now": now,
-    "preferences": preferences,
-    "language": language,
-    "time": duration,
-    "campus": campus,
-}
-for key in command_keys:
-    if key in function_mapping:
-        for alias in command_keys[key]:
-            function_map[alias] = function_mapping[key]
 
-
-"""STATES FUNCTIONS"""
-
-
-async def start(update: Update, context: CallbackContext) -> int:
-    """
-    Start function for the conversation handler, initialize the dict of user_data
-    in the context and return to the initial state
-    """
-    lang = user_data_handler.initialize_user_data(context)
-    user = update.message.from_user
-    initial_keyboard = KEYBOARDS.initial_keyboard(lang)
-    logging.info("%s started conversation", user.username)
-
-    await update.message.reply_text(
-        texts[lang]["texts"]["welcome"].format(user.username),
-        disable_web_page_preview=True,
-        parse_mode=ParseMode.HTML,
-        reply_markup=ReplyKeyboardMarkup(initial_keyboard),
-    )
-
-    return INITIAL_STATE
 
 
 async def initial_state(update: Update, context: CallbackContext) -> int:
@@ -556,64 +423,5 @@ async def cancel(update: Update, context: CallbackContext):
     )
     return INITIAL_STATE
 
-
-"""BOT INITIALIZATION"""
-
-
-def main():
-    # add persistence for states
-
-    regex = regex_builder.RegexBuilder(texts)
-
-    application = Application.builder().token(TOKEN).build()
-
-
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            INITIAL_STATE: [
-                MessageHandler(Filters.regex(regex.initial_state()), initial_state)
-            ],
-            SET_LOCATION: [
-                MessageHandler(Filters.text & ~Filters.command, set_location_state)
-            ],
-            SET_DAY: [
-                MessageHandler(
-                    Filters.regex(regex.date_regex())
-                    | Filters.regex(regex.date_string_regex()),
-                    set_day_state,
-                )
-            ],
-            SET_START_TIME: [
-                MessageHandler(Filters.text & ~Filters.command, set_start_time_state)
-            ],
-            SET_END_AND_SEND: [
-                MessageHandler(Filters.text & ~Filters.command, end_state)
-            ],
-            SETTINGS: [MessageHandler(Filters.regex(regex.settings_regex()), settings)],
-            SET_LANG: [MessageHandler(Filters.text & ~Filters.command, set_language)],
-            SET_CAMPUS: [MessageHandler(Filters.text & ~Filters.command, set_campus)],
-            SET_TIME: [MessageHandler(Filters.text & ~Filters.command, set_time)],
-        },
-        fallbacks=[
-            CommandHandler("terminate", terminate),
-            MessageHandler(Filters.regex(regex.info_regex()), info),
-            MessageHandler(Filters.regex(regex.cancel_command()), cancel),
-        ],
-        persistent=True,
-        name="search_room_c_handler",
-        allow_reentry=True,
-    )
-
-    application.add_error_handler(errorhandler.error_handler)
-    application.add_handler(conv_handler)
-
-    application.run_polling()
-
-
-async def run():
+def create_conversation_handler()
     pass
-
-
-if __name__ == "__main__":
-    main()
