@@ -6,10 +6,7 @@ authors = ["feDann <daniele99@ferrazzo.it>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-python-telegram-bot = "^20.0a4"
-python-dotenv = "^0.21.0"
-mongo = {path = "src/mongo"}
-scraper = {path = "src/scraper"}
+bot = {path = "src/bot"}
 
 
 [tool.poetry.dev-dependencies]

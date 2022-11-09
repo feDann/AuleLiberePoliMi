@@ -7,6 +7,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+python-telegram-bot = "^20.0a4"
+python-dotenv = "^0.21.0"
+mongo = {path = "../mongo"}
+scraper = {path = "../scraper"}
 
 
 [build-system]
