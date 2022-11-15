@@ -4,7 +4,8 @@ from pydantic import List, BaseModel
 
 class Preferences(BaseModel):
     """The user preferences model."""
-    language: str
+    campus: Optional[str]
+    duration: Optional[int]
 
 class SearchHistory(Document):
     """The user search history model."""
@@ -17,8 +18,8 @@ class SearchHistory(Document):
 class User(Document):
     telegram_id = Indexed(int)
     chat_id = Indexed(int)
-    first_name = Optional(str)
-    last_name = Optional(str)
-    username = Optional(str)
-    preferences = Preferences
+    first_name = Optional[str]
+    last_name = Optional[str]
+    username = Optional[str]
+    preferences = Optional[Preferences]
     search_history = List[Link[SearchHistory]]

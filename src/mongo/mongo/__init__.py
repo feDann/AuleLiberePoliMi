@@ -1,1 +1,1 @@
-from mongo.models import User, SearchHistory, Preferences
+from mongo import models
