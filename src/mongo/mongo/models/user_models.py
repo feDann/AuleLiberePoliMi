@@ -9,10 +9,11 @@ class Preferences(BaseModel):
 
 class SearchHistory(Document):
     """The user search history model."""
-    start_time: int
-    end_time: int
-    campus: str
-    day: str
+    telegram_id: int
+    start_time: Optional[int]
+    end_time: Optional[int]
+    campus: Optional[str]
+    day: Optional[str]
 
 
 class User(Document):
@@ -22,4 +23,4 @@ class User(Document):
     last_name = Optional[str]
     username = Optional[str]
     preferences = Optional[Preferences]
-    search_history = List[Link[SearchHistory]]
+    latest_search = Optional[SearchHistory]

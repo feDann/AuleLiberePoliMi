@@ -1,7 +1,12 @@
+import os
+import json
 from telegram import ReplyKeyboardMarkup
+from pathlib import Path
+from bot.utils.locations import locations
 
 keyboards = {
-    'initial_keyboard': ['🔍Search', '🕒Now', 'ℹinfo', '⚙️Preferences']
+    'initial_keyboard': ['🔍Search', '🕒Now', 'ℹinfo', '⚙️Preferences'],
+    'location_keyboard': ['❌Cancel'] + [location for location in  locations]
 }
 
 

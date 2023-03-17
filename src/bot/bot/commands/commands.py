@@ -24,3 +24,10 @@ async def start(update: Update, context: ContextTypes):
         ).save()
     await update.message.reply_text(welcome_message.format(user.username), reply_markup=get_keyboard("initial_keyboard"))
 
+
+async def cancel(update: Update, context: ContextTypes):
+    """
+    Fallback command used to cancel the current conversation,
+    Reset the last search and send the initial keyboard
+    """
+    assert False, "ERROR: Not implemented yet"
