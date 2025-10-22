@@ -3,8 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
-URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/OccupazioniGiornoEsatto.do"
-BASE_URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/"
+URL = "https://onlineservices.polimi.it/spazi/spazi/controller/OccupazioniGiornoEsatto.do"
+BASE_URL = "https://onlineservices.polimi.it/spazi/spazi/controller/"
 BUILDING = 'innerEdificio'
 ROOM = 'dove'
 LECTURE = 'slot'
