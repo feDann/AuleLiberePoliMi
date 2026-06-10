@@ -1,10 +1,15 @@
 from logging import root
 import requests
+import requests_cache
+import time as time_module
+import logging
 from bs4 import BeautifulSoup
 import json
 
-URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/OccupazioniGiornoEsatto.do"
-BASE_URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/"
+requests_cache.install_cache('polimi_cache', expire_after=3600)
+
+URL = "https://onlineservices.polimi.it/spazi/spazi/controller/OccupazioniGiornoEsatto.do"
+BASE_URL = "https://onlineservices.polimi.it/spazi/spazi/controller/"
 BUILDING = 'innerEdificio'
 ROOM = 'dove'
 LECTURE = 'slot'
@@ -15,10 +20,16 @@ MAX_TIME = 20
 GARBAGE = ["PROVA_ASICT" , "2.2.1-D.I."]
 
 
-"""
-Clean the dict with all the class occupancies from rooms that don't exists or are unreacheable
-"""
+
 def clean_data(infos):
+    """Filters out non-existent or unreachable rooms from the occupancy data.
+
+    Args:
+        infos (dict): The dictionary containing classroom occupancy information.
+
+    Returns:
+        dict: The cleaned dictionary with invalid rooms removed.
+    """
     for building in infos:
         for room in GARBAGE:
             if room in infos[building]:
@@ -27,22 +38,45 @@ def clean_data(infos):
     return infos
 
 
-"""
-Return a dict with all the info about the classrooms for the chosen day , 
-the function makes a get requests to the URL and then 
-build a dict with the classes information stored on the html table (the code may not be perfect 🥲)
-"""
-
 def find_classrooms(location , day , month , year):
+    """Retrieves classroom information for a specific date and location.
+
+    Makes a GET request to the Politecnico di Milano online services and parses
+    the HTML response to extract room occupancy data.
+
+    Args:
+        location (str): The campus location code (e.g., 'MIA').
+        day (int): The day of the month.
+        month (int): The month (1-12).
+        year (int): The year (YYYY).
+
+    Returns:
+        dict: A dictionary containing structured information about classrooms and their schedules.
+    """
     info = {} 
     buildingName = '-' #defaul value for building
     info[buildingName] = {} #first initialization due to table format
 
     params = {'csic': location , 'categoria' : 'tutte', 'tipologia' : 'tutte', 'giorno_day' : day , 'giorno_month' : month, 'giorno_year' : year , 'jaf_giorno_date_format' : 'dd%2FMM%2Fyyyy'  , 'evn_visualizza' : ''}
-    r = requests.get(URL , params= params)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+    
+    start_time = time_module.time()
+    r = requests.get(URL , params= params, headers=headers)
+    elapsed_time = time_module.time() - start_time
+    
+    cache_status = "HIT" if getattr(r, 'from_cache', False) else "MISS"
+    logging.info(f"PoliMi Request: {elapsed_time:.2f}s | Cache: {cache_status}")
+    
+    if r.status_code != 200:
+        print(f"Error: Failed to fetch data. Status code: {r.status_code}")
+        return {}
     
     soup = BeautifulSoup(r.text, 'html.parser')
+    soup = BeautifulSoup(r.text, 'html.parser')
     tableContainer = soup.find("div", {"id": "tableContainer"})
+    if not tableContainer:
+         print(f"Error: Table container not found. Response content length: {len(r.text)}")
+         return {}
     tableRows = tableContainer.find_all('tr')[3:] #remove first three headers
 
     with open("json/roomsWithPower.json","r") as j:

@@ -6,14 +6,15 @@ name = "pypi"
 [packages]
 beautifulsoup4 = "*"
 requests = "*"
-python-telegram-bot = "*"
+python-telegram-bot = "==13.15"
+standard-imghdr = "*"
 python-dotenv = "*"
 
 [dev-packages]
 black = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
 
 [pipenv]
 allow_prereleases = true

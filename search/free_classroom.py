@@ -8,7 +8,19 @@ import json
 
 MAX_TIME = 20
 
+
 def _is_room_free(lessons, starting_time, ending_time):
+    """Checks if a room is free for the specified time interval.
+
+    Args:
+        lessons (list): A list of dictionaries representing lessons/occupancy slots.
+        starting_time (float): The start time of the desired interval.
+        ending_time (float): The end time of the desired interval.
+
+    Returns:
+        tuple: A tuple (is_free, until_time) where 'is_free' is a boolean and
+               'until_time' is the float time until which the room is free (if applicable).
+    """
     until = MAX_TIME
     
     if len(lessons) == 0:
@@ -31,6 +43,19 @@ def _is_room_free(lessons, starting_time, ending_time):
 
 
 def find_free_room(starting_time , ending_time , location , day , month , year):
+    """Finds available classrooms for a given time slot and location.
+
+    Args:
+        starting_time (float): The start time of the search interval.
+        ending_time (float): The end time of the search interval.
+        location (str): The campus location code.
+        day (int): The day of the month.
+        month (int): The month.
+        year (int): The year.
+
+    Returns:
+        dict: A dictionary of free rooms grouped by building.
+    """
     free_rooms = defaultdict(list)
     infos = find_classrooms(location , day , month , year)
 

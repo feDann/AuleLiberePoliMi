@@ -6,10 +6,12 @@ from bs4 import BeautifulSoup
 URL = "https://www7.ceda.polimi.it/spazi/spazi/controller/RicercaAula.do?spazi___model___formbean___RicercaAvanzataAuleVO___postBack=true&spazi___model___formbean___RicercaAvanzataAuleVO___formMode=FILTER&spazi___model___formbean___RicercaAvanzataAuleVO___sede=tutte&spazi___model___formbean___RicercaAvanzataAuleVO___sigla=&spazi___model___formbean___RicercaAvanzataAuleVO___categoriaScelta=tutte&spazi___model___formbean___RicercaAvanzataAuleVO___tipologiaScelta=tutte&spazi___model___formbean___RicercaAvanzataAuleVO___iddipScelto=tutti&spazi___model___formbean___RicercaAvanzataAuleVO___soloPreseElettriche=S&spazi___model___formbean___RicercaAvanzataAuleVO___soloPreseElettriche_default=N&spazi___model___formbean___RicercaAvanzataAuleVO___soloPreseDiRete_default=N&evn_ricerca_avanzata=Ricerca aula"
 
 """
-Since having to call poli for each room every time to check if there are power outlets takes a lot of time
-the idea is to create this little script that does it once and generates a json file
-that can be opened and checked by the bot in constant time. Of course this won't be updated live but
-we don't add and remove power outlets to rooms every day, so launching this script every now and then is more than fine.
+Script to generate the list of classrooms equipped with power outlets.
+
+Since checking for power outlets for each room during runtime is inefficient,
+this script pre-fetches the data and generates a JSON file. This file can be
+loaded by the bot for constant-time lookups. Note: This script should be run
+periodically to keep the data up-to-date.
 """
 
 r = requests.get(URL)

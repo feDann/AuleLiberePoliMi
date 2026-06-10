@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  aulebot:
+    container_name: aulebot
+    image: ghcr.io/gorlix/auleliberepolimi:latest
+    restart: unless-stopped
+    network_mode: "host"
+    
+    environment:
+      - TOKEN=${TOKEN}
+      
+    volumes:
+      - aulebot_data:/app/data
+      - aulebot_log:/app/log      
+    healthcheck:
+      test: ["CMD-SHELL", "if [ $(( $(date +%s) - $(stat -c %Y heartbeat 2>/dev/null || echo 0) )) -lt 60 ]; then exit 0; else exit 1; fi"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  aulebot_data:
+  aulebot_log:

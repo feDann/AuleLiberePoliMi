@@ -1,36 +1,40 @@
 {
-    "texts":
-    {
-        "welcome": "Hi <b>{}</b>! This is Aule Libere Polimi bot, with this bot you will be able to search free classrooms for the entire week!\nThis bot is made by <b><a href='telegram.me/daniele_ferrazzo'>me</a></b>, for any issue, simply ask.\nIf you want more information select info!\nYou can terminate the conversation whenever you want using /terminate",
-        "location": "Choose the location",
-        "day" : "Choose a day",
-        "starting_time" : "Choose the starting time",
-        "ending_time" : "Choose the ending time",
-        "error": "Use the buttons you fucking donkey!",
-        "ops" : "In this time slot PoliMi is closed!\nI will give you instead the free classrooms of tomorrow morning from 8 a.m. to 10 a.m.",
-        "terminate": "Conversation terminated!\nPress /start to start again the conversation!",
-        "cancel" : "Going back⬅",
-        "info" : "To start the Search process simply touch the \"🔍Search\" button and then insert using the custom keyboard the asked information\n\nThe \"🕒Now\" button allows you, after setting your preferences, to quickly search the free classrooms!\n\nThe \"⚙️Preferences\" button allows you to set your preferences about yout preferred campus and the duration in term of hours for the quick search. Also allows you to change language! \n\nIf you want to take a look at the spaghetti code you can find it on GitHub <a href='https://github.com/feDann/AuleLiberePoliMi'>here</a>",
-        "settings" : "This is the settings menu, from here you can choose your preferred language, preferred campus and duration time for the quick search!",
-        "language" : "Select your preferred language",
-        "campus" : "Choose the preferred campus for the quick search",
-        "time" : "Choose the amount of hours for the quick search",
-        "success" : "Done👍🏻",
-        "missing" : "The campus preference is missing!\nTo use this command set the campus preference",
-        "exception" : "An exception occurred during the search process☹️\nTry again later or contact <a href='telegram.me/daniele_ferrazzo'>me</a> for further info",
-        "until" : "free until"
+    "texts": {
+        "welcome": "Hi <b>{}</b>! 👋\nThis is <b>Aule Libere Polimi</b> bot 📚.\nWith this bot you can find free classrooms for the entire week! 🗓️\n\nThis bot is maintained by <b><a href='https://github.com/gorlix'>Alessandro Gorla (Gorlix)</a></b> (forked from <b><a href='https://github.com/feDann'>FeDann</a></b>).\nFor any issues, feel free to ask! 🛠️\n\nSelect <b>info</b> for more details! ℹ️\nYou can terminate the conversation anytime using /terminate 🛑",
+        "location": "📍 Choose the location:",
+        "day": "📅 Choose a day:",
+        "starting_time": "⏰ Choose the starting time:",
+        "ending_time": "🏁 Choose the ending time:",
+        "error": "Please use the provided buttons! 🥺",
+        "ops": "PoliMi is currently closed! 🌙\nI'll show you the free classrooms for tomorrow morning (8:00 - 10:00) instead! ☀️",
+        "terminate": "Conversation terminated! See you soon! 👋\nPress /start to start a new conversation! 🔄",
+        "cancel": "Going back ⬅️",
+        "info": "To start searching, simply touch the \"🔍Search\" button and use the keyboard to select your preferences.\n\nThe \"🕒Now\" button allows you to quickly find free classrooms based on your saved preferences! ⚡\n\nThe \"⚙️Preferences\" button lets you set your preferred campus and default search duration (in hours). You can also change the language here! 🌍\n\nCheck out the code on <a href='https://github.com/gorlix/AuleLiberePoliMi'>GitHub</a>! 💻\nThis project is a fork of <a href='https://github.com/feDann/AuleLiberePoliMi'>this repository</a>.",
+        "settings": "⚙️ <b>Settings Menu</b>\nHere you can choose your preferred language, campus, and quick search duration! 🔧",
+        "language": "🌍 Select your preferred language:",
+        "campus": "🏫 Choose your preferred campus for quick search:",
+        "time": "d⏳ Choose the default duration (hours) for quick search:",
+        "success": "Done! 👍",
+        "missing": "⚠️ Campus preference missing!\nPlease set your preferred campus in Settings to use this feature.",
+        "exception": "Oops! An error occurred during the search ☹️\nPlease try again later or contact <a href='https://github.com/gorlix'>Alessandro Gorla</a> for info. 🆘",
+        "until": "free until",
+        "loading": "Loading data... ⏳",
+        "no_rooms": "No free rooms found for the selected criteria (or campus closed). 😔",
+        "format_emoji": "Switched to Emoji Mode! ⚡\nLegend:\n🕒 = Free until\n🔌 = Power socket",
+        "format_text": "Switched to Text Mode! 📝"
     },
-    "keyboards":
-    {
-        "search" : "🔍Search",
-        "now" : "🕒Now",
-        "info" : "ℹinfo",
-        "preferences" : "⚙️Preferences",
-        "language" : "Language",
-        "campus" : "Preferred Campus",
-        "time" : "Search Duration",
-        "cancel" :  "/Back" ,
+    "keyboards": {
+        "search": "🔍Search",
+        "now": "🕒Now",
+        "info": "ℹinfo",
+        "preferences": "⚙️Preferences",
+        "language": "Language",
+        "campus": "Preferred Campus",
+        "time": "Search Duration",
+        "cancel": "❌Back",
         "today": "Today",
-        "tomorrow" : "Tomorrow"         
+        "tomorrow": "Tomorrow",
+        "all_buildings": "All Buildings",
+        "format": "📝/⚡ Format"
     }
 }

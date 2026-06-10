@@ -1,32 +1,60 @@
 {
-	"Milano Città Studi": "MIA",
-	"Milano Bovisa": "MIB",
-	"Como": "COE",
-	"Cremona": "CRG",
-	"Piacenza": "PCL",
-	"Lecco": "LCF",
-	"Mantova": "MNI",
-	"Como - Via Anzani": "COE04",
-	"Como - Via Castelnuovo": "COE02",
-	"Como - Via Natta": "COE06",
-	"Como - Via Valleggio": "COE03",
-	"Cremona - Via Sesto": "CRG01",
-	"Lecco - Via Ghislanzoni": "LCF04",
-	"Mantova - Via Scarsellini 15": "MNI01",
-	"Mantova - Via Scarsellini 2": "MNI02",
-	"Milano Bovisa - Via Durando": "MIB02",
-	"Milano Bovisa - Via La Masa": "MIB01",
-	"Milano Città Studi - Piazza Leonardo da Vinci 26": "MIA11",
-	"Milano Città Studi - Piazza Leonardo da Vinci 32": "MIA01",
-	"Milano Città Studi - Via Bassini": "MIA03",
-	"Milano Città Studi - Via Bonardi": "MIA02",
-	"Milano Città Studi - Via Colombo 40": "MIA06",
-	"Milano Città Studi - Via Colombo 81": "MIA07",
-	"Milano Città Studi - Via Golgi 20": "MIA14",
-	"Milano Città Studi - Via Golgi 40": "MIA04",
-	"Milano Città Studi - Via Mancinelli": "MIA05",
-	"Milano Città Studi - Via Pascoli 70": "MIA15",
-	"Milano Città Studi - Viale Romagna": "MIA09",
-	"Piacenza - Via Scalabrini 113": "PCL04",
-	"Piacenza - Via Scalabrini 76": "PCL01"
+  "Milano Città Studi": {
+    "code": "MIA",
+    "sedi": {
+      "Piazza Leonardo da Vinci 26": "MIA11",
+      "Piazza Leonardo da Vinci 32": "MIA01",
+      "Via Bassini": "MIA03",
+      "Via Bonardi": "MIA02",
+      "Via Colombo 40": "MIA06",
+      "Via Colombo 81": "MIA07",
+      "Via Golgi 20": "MIA14",
+      "Via Golgi 40": "MIA04",
+      "Via Mancinelli": "MIA05",
+      "Via Pascoli 70": "MIA15",
+      "Viale Romagna": "MIA09"
+    }
+  },
+  "Milano Bovisa": {
+    "code": "MIB",
+    "sedi": {
+      "Via Durando": "MIB02",
+      "Via La Masa": "MIB01"
+    }
+  },
+  "Como": {
+    "code": "COE",
+    "sedi": {
+      "Via Anzani": "COE04",
+      "Via Castelnuovo": "COE02",
+      "Via Natta": "COE06",
+      "Via Valleggio": "COE03"
+    }
+  },
+  "Cremona": {
+    "code": "CRG",
+    "sedi": {
+      "Via Sesto": "CRG01"
+    }
+  },
+  "Piacenza": {
+    "code": "PCL",
+    "sedi": {
+      "Via Scalabrini 113": "PCL04",
+      "Via Scalabrini 76": "PCL01"
+    }
+  },
+  "Lecco": {
+    "code": "LCF",
+    "sedi": {
+      "Via Ghislanzoni": "LCF04"
+    }
+  },
+  "Mantova": {
+    "code": "MNI",
+    "sedi": {
+      "Via Scarsellini 15": "MNI01",
+      "Via Scarsellini 2": "MNI02"
+    }
+  }
 }
